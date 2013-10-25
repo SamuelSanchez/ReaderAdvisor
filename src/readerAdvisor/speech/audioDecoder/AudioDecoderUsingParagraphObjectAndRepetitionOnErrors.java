@@ -8,8 +8,6 @@ import readerAdvisor.gui.*;
 import readerAdvisor.speech.LiveRecognizer;
 import readerAdvisor.speech.util.Paragraph;
 
-import javax.swing.*;
-
 /**
  * Created with IntelliJ IDEA.
  * User: Eduardo
