@@ -1,0 +1,49 @@
+package readerAdvisor.gui.tool;
+
+import static java.awt.event.InputEvent.CTRL_DOWN_MASK;
+import java.awt.*;
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+
+public class MenuBar {
+   public static JMenu createFileMenu(Object parentWindow){
+	JMenu fileMenu = new JMenu("File");
+        //fileMenu.setMnemonic(KeyEvent.VK_F);
+
+        JMenuItem item = createItem("Open", KeyEvent.VK_O, parentWindow);
+        item.setAccelerator(KeyStroke.getKeyStroke('O', CTRL_DOWN_MASK));
+        fileMenu.add(item);
+
+        fileMenu.addSeparator();
+
+        item = createItem("Exit", KeyEvent.VK_E, parentWindow);
+        item.setAccelerator(KeyStroke.getKeyStroke('E', CTRL_DOWN_MASK));
+        fileMenu.add(item);
+        
+	return fileMenu;
+    }
+
+    public static JMenu createViewMenu(Object parentWindow){
+	JMenu fileMenu = new JMenu("View");
+        
+	JMenu windowView = new JMenu("Window");
+        JMenuItem item = createItem("Recognized Text", KeyEvent.VK_R, parentWindow);
+        item.setAccelerator(KeyStroke.getKeyStroke('T', CTRL_DOWN_MASK));
+        windowView.add(item);
+        fileMenu.add(windowView);
+        
+	return fileMenu;
+    }
+
+    private static JMenuItem createItem(String itemName, Object parentWindow){
+        return createItem(itemName, null, parentWindow);
+    }
+
+    private static JMenuItem createItem(String itemName, Integer mnemonic, Object parentWindow){
+        JMenuItem item = new JMenuItem(itemName, mnemonic);
+        item.addActionListener(parentWindow);
+        return item;
+    }
+}

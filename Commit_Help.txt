@@ -1,0 +1,12 @@
+touch README.md
+git init
+git add README.md
+git commit -m "First Commit"
+git remote add origin https://github.com/SamuelSanchez/Reader_Advisor.git
+git push -u origin master
+
+git remote add origin https://github.com/SamuelSanchez/Reader_Advisor.git
+git push -u origin master
+
+git rm file1.txt
+git commit -m "remove file1.txt"

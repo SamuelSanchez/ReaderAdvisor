@@ -1,0 +1,20 @@
+1) Install 'sharutils package'
+   - Open Ubuntu Software Center and download it
+
+2) Go to 'sphinx4-1.0beta6/lib :
+   - Type : sudo chmod +x jsapi.sh
+	    sh ./jsapi.sh
+	    Type 'y' to accept the disclosure and jsapi.jar will be created
+
+3) Go one directory back : 
+    - Type : cd ..
+	     ant
+	     ant javadoc
+	     ant -Daccess=private javadoc
+	     ant -Daccess=protected javadoc
+
+4) Copy : js.jar, jsapi.jar, tags.jar to the classpath
+
+5) Copy : bld folder from upper directory to main directory
+
+----------------------------------------------------------------

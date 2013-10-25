@@ -1,0 +1,114 @@
+package readerAdvisor.gui;
+
+import readerAdvisor.gui.tool.NumberedEditorKit;
+import readerAdvisor.gui.tool.MenuBar;
+import static java.awt.event.InputEvent.CTRL_DOWN_MASK;
+import java.awt.*;
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.io.*;
+
+/**
+ * Created with IntelliJ IDEA.
+ * User: Eduardo
+ * Date: 4/21/13
+ * Time: 5:13 PM
+ * To change this template use File | Settings | File Templates.
+ */
+public class Window extends JFrame implements ActionListener{
+    private static final int location_X = 200;
+    private static final int location_Y = 200;
+    private static final int size_X = 700;
+    private static final int size_Y = 500;
+    private static final String NEW_LINE = System.getProperty("line.separator");
+    private JMenuBar menuBar;
+    private Container contentPane;
+    private JEditorPane contentWindow;
+
+    public Window(){
+        contentPane = getContentPane();
+
+        contentWindow = new JEditorPane();
+        contentWindow.setEditorKit(new NumberedEditorKit());
+        contentWindow.setEditable(false);
+//        contentWindow.setLineWrap(true);
+//        contentWindow.setWrapStyleWord(true);
+        contentWindow.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        this.add(new JScrollPane(contentWindow));
+    }
+
+    public void startGUI(){
+        this.pack();
+        this.setLocation(location_X, location_Y);
+        this.setSize(size_X, size_Y);
+        createMenuBar();
+        this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        this.setVisible(true);
+    }
+
+    private void createMenuBar(){
+        //Create and add a Menu in the Menu_Bar
+        menuBar = new JMenuBar();
+	menuBar.add(MenuBar.createFileMenu(this));
+	menuBar.add(MenuBar.createViewMenu(this));
+        setJMenuBar(menuBar);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        String action = e.getActionCommand();
+        if (action.equals("Exit")){
+            System.exit(0);
+        }//Quit
+        else if (action.equals("Open")){
+            openFile();
+        }//Open
+	else if (action.equals("Recognized Text")){
+	    recognizedTextPanel();
+	}//Recognized Text
+        else {
+            System.out.println("HERE?! - " + action);
+        }
+    }
+
+    private void openFile(){
+        JFileChooser fileChooser = new JFileChooser();
+        int returnVal = fileChooser.showOpenDialog(this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            try{
+                String fileName = fileChooser.getSelectedFile().getPath();
+                // Open the file
+                BufferedReader reader = new BufferedReader(new FileReader(fileName));
+                // Store all the file data into the buffer
+                StringBuffer buffer = new StringBuffer();
+                String line;
+                while((line = reader.readLine()) != null){
+                    buffer.append(line);
+                    buffer.append(NEW_LINE);
+                }
+                // Remove the last line
+                buffer.replace(0, buffer.length(), buffer.substring(0, (buffer.length() - NEW_LINE.length())));
+                reader.close();
+                // Set the window title
+                this.setTitle(fileName);
+                // Load the page contents
+                renderScreen(buffer.toString());
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void renderScreen(String text){
+        contentWindow.removeAll();
+        contentWindow.repaint();
+        contentWindow.setText(text);
+        //pack();
+    }
+
+    private void recognizedTextPanel(){
+	
+    }
+}

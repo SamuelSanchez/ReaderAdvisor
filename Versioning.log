@@ -1,0 +1,63 @@
+version 0.4
+    DONE:
+        - Add highlight drop down (Now, it is totally useless)
+        - Give the program a line to predict, not a single word
+        - Highlight in Yellow the line that the user is reading
+        - Highlight in Green the words that the user has recognized
+        - Fixed the Grammar file. It creates a variable for every line that is going to recognize.
+        - Current fixes on the Grammar has improved the recognizer
+
+    TO DO:
+        [x] Make sure to highlight the line being recognized
+        [ ] Not the entire recognized sentence is highlighted. Some words at the end are omitted
+        [ ] If an word is not recognize, color it as Red (Probably not - Set as option in Configuration file)
+        [ ] Set up in the configuration how the highlighters will be used, which colors to assign and whether to assign it or not
+        [ ] Fix the minimum length of the TextWindow
+        [ ] Fix the size of the Window (TextWindow)
+        [ ] Create a PlayBack button on the configuration window
+        [ ] Create a 'temp' folder in the same directory as the jar file on execution
+        [ ] When recognizing, if the user misreads it, then send it back to the beginning of the line (Set it as optional)
+        [ ] Make sure that it works on Unix (The code and bash script)
+        [ ] If error on the line, un-highlight the line
+
+version 0.3
+    DONE:
+        - Add highlight drop down (Now, it is totally useless)
+        - Give the program a line to predict, not a single word
+        - Highlight in Yellow the line that the user is reading
+        - Highlight in Green the words that the user has recognized
+        - Fixed the Grammar file. It creates a variable for every line that is going to recognize.
+        - Current fixes on the Grammar has improved the recognizer
+
+    TO DO:
+        [ ] If an word is not recognize, color it as Red (Probably not - Set as option in Configuration file)
+        [ ] Set up in the configuration how the highlighters will be used, which colors to assign and whether to assign it or not
+        [ ] Fix the minimum length of the TextWindow
+        [ ] Fix the size of the Window (TextWindow)
+        [ ] Create a PlayBack button on the configuration window
+        [ ] Create a 'temp' folder in the same directory as the jar file on execution
+        [ ] When recognizing, if the user misreads it, then send it back to the beginning of the line (Set it as optional)
+        [ ] Make sure that it works on Unix (The code and bash script)
+        [ ] If error on the line, un-highlight the line
+
+version 0.2
+    DONE:
+        - When recognition finishes, reset the recognizer by deleting highlights,
+          resetting tokens and going to the beginning of the document.
+        - Comment the above but maintain the function
+        - Create a class 'GlobalProperties' that loads Systems Properties from file 'software.properties'
+            -GlobalProperties -> "configurationFile"
+            -build.xml        -> "configurationFile = software.properties"
+            -software.properties has all the System preferences
+
+    TO DO:
+        [ ] Fix the minimum length of the TextWindow
+        [ ] Fix the size of the Window (TextWindow)
+        [ ] Create a PlayBack button on the configuration window
+        [x] Add a highlighter drop down (tobe recognize, recognized, none)
+        [ ] Create a 'temp' folder in the same directory as the jar file on execution
+        [ ] When recognizing, if the user misreads it, then send it back to the beginning of the line (Set it as optional)
+        [ ] Make sure that it works on Unix (The code and bash script)
+        [x] Compile Sphinx with 1.5 JRE
+        [x] Give the program a line to predict, not a single word
+        [ ] If error on the line, un-highlight the line
