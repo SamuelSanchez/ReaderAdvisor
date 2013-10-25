@@ -102,7 +102,6 @@ public class AudioDecoderUsingParagraphObjectAndRepetitionOnErrors extends Decod
             // Enable the window to be opened once the recognizer has stopped running
             ConfigurationWindow.getInstance().setEnableWindow(true);
         }
-
         // Remove the last highlight line - the line that was highlighted
         removePreviousTextToRecognize();
     }
