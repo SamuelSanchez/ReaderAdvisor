@@ -33,7 +33,6 @@ public class AudioHandler {
         new AudioDecoderUsingParagraphObject(liveRecognizer).start();
     }
 
-    // TODO: KEEP TESTING - SPEECH RECOGNITION
     /*
         Add description here
      */

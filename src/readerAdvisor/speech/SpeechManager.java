@@ -1,5 +1,6 @@
 package readerAdvisor.speech;
 
+import readerAdvisor.environment.GlobalProperties;
 import readerAdvisor.file.FileUtils;
 import readerAdvisor.file.HighlightItem;
 import readerAdvisor.gui.DebuggerWindow;
@@ -15,11 +16,17 @@ import readerAdvisor.speech.util.GrammarUtils;
  * To change this template use File | Settings | File Templates.
  */
 public class SpeechManager {
-    // TODO: Add the below variables and values in the software.properties file
-    public String speechConfiguration    = null;//"readerAdvisor.config.xml";
-    public static String GRAMMAR         = "readerAdvisor";
-    public static String GRAMMAR_FILE    = "readerAdvisor.gram";
-    public static String DIRECTORY       = "temp";
+    /*
+     * Speech Manager and grammar configuration files
+     * - SpeechConfiguration : File where all the Speech Manager (Sphinx) information will be retrieve
+     * - GRAMMAR : Name of the grammar to be used. It will be used when creating .gram files.
+     * - GRAMMAR_FILE : Name of the grammar file.
+     * - DIRECTORY : Directory name where the .gram files will be stored. This directory will be created and destroyed at runtime.
+     */
+    public String speechConfiguration;  //"readerAdvisor.config.xml";
+    public static String GRAMMAR;       //"readerAdvisor";
+    public static String GRAMMAR_FILE;  //"readerAdvisor.gram";
+    public static String DIRECTORY;     //"temp";
 
     private static volatile SpeechManager speechManager = new SpeechManager();
     private static volatile LiveRecognizer liveRecognizer;
@@ -31,8 +38,13 @@ public class SpeechManager {
     // Highlight preferences
     private HighlightItem highlightItem = HighlightItem.HYPOTHESIS;
 
+    // TODO: Test changes!!!!
     private SpeechManager(){
-         /* Do Nothing */
+         // Set up class variables - Provide default values if this properties are not defined in software.properties file
+        speechConfiguration = GlobalProperties.getInstance().getProperty("speechManager.speechConfiguration", "readerAdvisor.config.xml");
+        GRAMMAR = GlobalProperties.getInstance().getProperty("speechManager.GRAMMAR", "readerAdvisor");
+        GRAMMAR_FILE = GRAMMAR + ".gram";
+        DIRECTORY = GlobalProperties.getInstance().getProperty("speechManager.grammarDirectory", "temp");
     }
 
     public static SpeechManager getInstance(){

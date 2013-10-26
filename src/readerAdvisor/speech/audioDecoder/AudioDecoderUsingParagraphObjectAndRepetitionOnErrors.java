@@ -24,7 +24,6 @@ public class AudioDecoderUsingParagraphObjectAndRepetitionOnErrors extends Decod
     public void run(){
         Microphone microphone = liveRecognizer.getMicrophone();
 //        Recognizer recognizer = liveRecognizer.getRecognizer();
-
         try{
             // This flag cannot be read in the toggle method since it will prevent the window to open at all times, not only when reading
             // Disable the window to be opened once the recognizer is running - driven by the configuration

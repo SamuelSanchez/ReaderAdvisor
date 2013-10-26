@@ -35,7 +35,16 @@ public class MenuBar {
                     if (fileSummary.getFileData().toString() != null && !fileSummary.getFileData().toString().trim().isEmpty()) {
                         // Make sure that there's a Sphinx Configuration file
                         if(SpeechManager.getInstance().getSpeechConfiguration() == null){
-                            SpeechManager.getInstance().setSpeechConfiguration(GlobalProperties.getInstance().getProperty("speechManager.speechConfiguration"));
+                            // Retrieve the configuration from the software.properties file.
+                            // If there's no speechConfiguration defined then used the default value.
+                            SpeechManager.getInstance().setSpeechConfiguration(GlobalProperties.getInstance().getProperty("speechManager.speechConfiguration", "readerAdvisor.config.xml"));
+                        }
+                        // Select the configuration file that the user selected from the ConfigurationWindow.SphinxConfiguration.SphinxProperties drop-down
+                        // Only commit this file if it exits. If there's an error, then do not commit the file and used the default value
+                        try{
+                            // TODO: Implement this function where we are retrieving Sphinx Configuration file from the drop-down menu
+                        }catch(Exception ex){
+                            // Do nothing
                         }
                         // Allocate Sphinx4 for recognition
                         SpeechManager.getInstance().configureRecognizer();
