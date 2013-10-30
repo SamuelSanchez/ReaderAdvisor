@@ -38,7 +38,6 @@ public class SpeechManager {
     // Highlight preferences
     private HighlightItem highlightItem = HighlightItem.HYPOTHESIS;
 
-    // TODO: Test changes!!!!
     private SpeechManager(){
          // Set up class variables - Provide default values if this properties are not defined in software.properties file
         speechConfiguration = GlobalProperties.getInstance().getProperty("speechManager.speechConfiguration", "readerAdvisor.config.xml");

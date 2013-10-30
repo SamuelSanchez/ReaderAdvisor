@@ -10,8 +10,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created with IntelliJ IDEA.
@@ -21,18 +19,15 @@ import java.util.concurrent.atomic.AtomicInteger;
  * To change this template use File | Settings | File Templates.
  */
 public class RepeatReadingLinePanel {
-
     // Gui Window where this panel belongs
     private JDialog frame;
 
     // Values are configuration in 'software.properties' file
     private volatile Integer numberOfMessagesToBeRepeated = GlobalProperties.getInstance().getPropertyAsInteger("repeatReadingLinePanel.numberOfMessagesToBeRepeated", 3);
     private volatile boolean isMessagesToBeRepeated = GlobalProperties.getInstance().getPropertyAsBoolean("repeatReadingLinePanel.isMessagesToBeRepeated");
-//    private AtomicInteger numberOfMessagesToBeRepeated = new AtomicInteger(GlobalProperties.getInstance().getPropertyAsInteger("repeatReadingLinePanel.numberOfMessagesToBeRepeated", 3));
-//    private AtomicBoolean isMessagesToBeRepeated = new AtomicBoolean(GlobalProperties.getInstance().getPropertyAsBoolean("repeatReadingLinePanel.isMessagesToBeRepeated"));
     private volatile String errorMessage = GlobalProperties.getInstance().getProperty("repeatReadingLinePanel.errorMessage", "Please read the line again");
 
-    // -- HACKS
+    // Global variables since their values will be constantly read
     private final JCheckBox checkbox = new JCheckBox("Repeat line", isMessagesToBeRepeated);
     private final JSpinner numberSpinner = new JSpinner(new SpinnerNumberModel(numberOfMessagesToBeRepeated.intValue(), 1, 100, 1));
 
@@ -80,7 +75,7 @@ public class RepeatReadingLinePanel {
      */
     public synchronized void checkReadingRepetition(){
         // If the counter is zero then the user is requesting to repeat the line then go to the next line
-        if(isMessagesToBeRepeated && numberOfMessagesToBeRepeated < 1){
+        if(isMessagesToBeRepeated && numberOfMessagesToBeRepeated < 0){
             isMessagesToBeRepeated = false;
             // Deselect the check-box
             selectCheckBok(false);
@@ -94,17 +89,28 @@ public class RepeatReadingLinePanel {
      */
     public synchronized boolean checkRepetitionValidationAndDecreaseCounter(){
         boolean checkRepetitionValidationAndDecreaseCounter = false;
-        if(isMessagesToBeRepeated && numberOfMessagesToBeRepeated > 0){
-            // Decrease the number of message to be repeated
-            numberOfMessagesToBeRepeated = numberOfMessagesToBeRepeated -1;
+        if(isMessagesToBeRepeated && numberOfMessagesToBeRepeated >= 0){
             // Display message to repeat the reading
-            JOptionPane.showMessageDialog(null, errorMessage + " [" + numberOfMessagesToBeRepeated + "]", "Reading Error", JOptionPane.ERROR_MESSAGE);
+            if(numberOfMessagesToBeRepeated > 0){
+                // Skip this error message the last time it makes the user repeats. It shouldn't say that you have '0' more times to repeat the line.
+                JOptionPane.showMessageDialog(null, errorMessage +
+                        (GlobalProperties.getInstance().getPropertyAsBoolean("repeatReadingLinePanel.displayNumberOfRepetitionsLeft") ? (" [" + numberOfMessagesToBeRepeated + "]") : "")
+                        , "Reading Error", JOptionPane.ERROR_MESSAGE);
+            }
+            // Decrease the number of message to be repeated until it hits '-1'
+            // It stills repeat '0' times because it is the last time that the line gets read but the message will not be displayed to the user.
+            // It should be a consistency between the number of times the user selects to read and the number of times the dialog is displayed
+            numberOfMessagesToBeRepeated = numberOfMessagesToBeRepeated -1;
             // The action has taken effect
             checkRepetitionValidationAndDecreaseCounter = true;
         }
         return checkRepetitionValidationAndDecreaseCounter;
     }
 
+    // Provide this panel to the user and add it to the Configuration window
+    // This panel will have the option for the user to repeat the line that is being read if the user read it incorrectly
+    // It does not need to be synchronized since it is called only once when creating the guy and this class variables
+    // won't be available for modification at this point but after the gui has been created
     public JPanel getPanel(){
         final JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createTitledBorder("Reading repetition"));
@@ -131,7 +137,7 @@ public class RepeatReadingLinePanel {
         panel.add(checkbox, BorderLayout.WEST);
         // Display input times options
         JPanel panelDisplayMessage = new JPanel(new FlowLayout());
-        JLabel label = new JLabel("Display message after");
+        JLabel label = new JLabel("Display message");
         panelDisplayMessage.add(label);
         //numberSpinner.setEditor(new JSpinner.NumberEditor(numberSpinner, "0000"));
         numberSpinner.addChangeListener(new ChangeListener() {
@@ -141,9 +147,10 @@ public class RepeatReadingLinePanel {
             }
         });
         panelDisplayMessage.add(numberSpinner);
-        label = new JLabel("times");
+        label = new JLabel("more times");
         panelDisplayMessage.add(label);
         panel.add(panelDisplayMessage, BorderLayout.CENTER);
+        // TODO: Move this button outside the repeatReadingLinePanel class - Change from loadPropertiesForClass to LoadPropertiesFromClasses
         // Reload the properties file
         if(GlobalProperties.getInstance().getPropertyAsBoolean("configurationWindow.displayReloadPropertiesButton")){
             final JButton reloadPropertiesFileButton = new JButton("Reload Properties");
@@ -151,7 +158,7 @@ public class RepeatReadingLinePanel {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     // Reload changes for this class
-                    GlobalProperties.getInstance().loadPropertiesForClass("ConfigurationWindow");
+                    GlobalProperties.getInstance().loadPropertiesForClass("repeatReadingLinePanel");
                     // Reset variable values
                     numberOfMessagesToBeRepeated = GlobalProperties.getInstance().getPropertyAsInteger("repeatReadingLinePanel.numberOfMessagesToBeRepeated", 3);
                     isMessagesToBeRepeated = GlobalProperties.getInstance().getPropertyAsBoolean("repeatReadingLinePanel.isMessagesToBeRepeated");

@@ -19,7 +19,7 @@ import java.util.HashMap;
  * To change this template use File | Settings | File Templates.
  */
 public class GrammarUtils {
-
+    // TODO: Upgrade the way to create and delete the Grammar directory
     private static HashMap<String,Double> wordsProbabilityDictionary = new HashMap<String,Double>();
 
     public static void setWordsProbabilityDictionary(HashMap<String,Double> wpd){
@@ -98,7 +98,7 @@ public class GrammarUtils {
                       "grammar " + SpeechManager.GRAMMAR + ";" + EnvironmentUtils.NEW_LINE + EnvironmentUtils.NEW_LINE;
 
         int counter = 0;
-        double weight = 0.0;
+        double weight;
 
         // Get word length properties
         int MIN_WORD_LENGTH = GlobalProperties.getInstance().getPropertyAsInteger("MinimumWordLength", 4);

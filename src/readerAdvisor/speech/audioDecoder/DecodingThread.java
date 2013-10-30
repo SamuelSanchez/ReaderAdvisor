@@ -1,15 +1,9 @@
 package readerAdvisor.speech.audioDecoder;
 
-import edu.cmu.sphinx.frontend.util.Microphone;
-import edu.cmu.sphinx.recognizer.Recognizer;
-import readerAdvisor.environment.EnvironmentUtils;
 import readerAdvisor.file.FileUtils;
 import readerAdvisor.file.MyHighlighter;
 import readerAdvisor.gui.*;
 import readerAdvisor.speech.LiveRecognizer;
-import readerAdvisor.speech.util.Paragraph;
-
-import javax.swing.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -19,7 +13,7 @@ import javax.swing.*;
  * To change this template use File | Settings | File Templates.
  */
 public abstract class DecodingThread extends Thread {
-
+    // Singleton class
     protected LiveRecognizer liveRecognizer;
 
     public DecodingThread(LiveRecognizer liveRecognizer) {
@@ -89,7 +83,7 @@ public abstract class DecodingThread extends Thread {
     // Delay time in milliseconds
     protected void millisecondsToDelay(int time){
         try {
-            Thread.sleep(500);
+            Thread.sleep(time);
         } catch (InterruptedException ie) {
             ie.printStackTrace();
         }

@@ -116,6 +116,7 @@ Project information to be disclosed soon.
             <java classname="${package_name}.${MainApp}" classpath="." fork="yes" maxmemory="${memory_cap}">
                 <classpath refid="run.classpath"/>
                 <jvmarg value="-server"/>
+                <jvmarg value="-XX:+PrintGCDetails"/>
                 <!--<sysproperty key="java.util.logging.config.file" value="tidigits.props"/>-->
                 <sysproperty key="frontend" value="epFrontEnd"/>
                 <!--<sysproperty key="showPartialResults" value="true"/>-->

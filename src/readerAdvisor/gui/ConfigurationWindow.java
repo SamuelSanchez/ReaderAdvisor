@@ -4,6 +4,7 @@ import readerAdvisor.environment.GlobalProperties;
 import readerAdvisor.file.HighlightComboBox;
 import readerAdvisor.file.HighlightItem;
 import readerAdvisor.gui.panels.RepeatReadingLinePanel;
+import readerAdvisor.gui.panels.SaveAudioFilePanel;
 import readerAdvisor.gui.tool.MenuBarUtils;
 import readerAdvisor.gui.tool.WindowVariable;
 import readerAdvisor.speech.SpeechManager;
@@ -18,13 +19,16 @@ import java.awt.*;
  * Time: 3:03 PM
  * To change this template use File | Settings | File Templates.
  */
+@SuppressWarnings("unused")
 public class ConfigurationWindow extends JDialog {
+    // Singleton Class
     private static volatile ConfigurationWindow configurationWindow = new ConfigurationWindow();
     private Container contentPane;
-    private volatile boolean enableWindow = true;
+    protected volatile boolean enableWindow = true;
 
     // Initialize Panels on this Windows
     protected volatile RepeatReadingLinePanel readingLinePanel = new RepeatReadingLinePanel(this);
+    protected volatile SaveAudioFilePanel saveAudioFilePanel = null;
 
     private ConfigurationWindow(){
         // true - Disable all other windows when this Window is open
@@ -88,8 +92,12 @@ public class ConfigurationWindow extends JDialog {
      * It allows the message 'to repeat reading the line' to be displayed 'X' amount of times
      */
     private void repeatReadingLinePanel(){
-        // Add the items in the panel
-        contentPane.add(readingLinePanel.getPanel());
+        // Create the reading panel and add it to this window
+        try{
+            contentPane.add(readingLinePanel.getPanel());
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
     // --------- Functions of the reading panel ----------- //
@@ -162,9 +170,13 @@ public class ConfigurationWindow extends JDialog {
      * The directory to where the file is stored is provided by default or could be chosen by the user.
      */
     private void saveAudioFilePanel(){
-        JPanel panel = new JPanel(new FlowLayout());
-        panel.setBorder(BorderFactory.createTitledBorder("Audio file"));
-        contentPane.add(panel);
+        // Create the audio panel and add it to this window
+        try{
+            saveAudioFilePanel = new SaveAudioFilePanel();
+            contentPane.add(saveAudioFilePanel.getPanel());
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
     /*

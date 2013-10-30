@@ -23,11 +23,12 @@ public class AudioDecoderUsingParagraphObjectAndRepetitionOnErrors extends Decod
 
     public void run(){
         Microphone microphone = liveRecognizer.getMicrophone();
-//        Recognizer recognizer = liveRecognizer.getRecognizer();
+        Recognizer recognizer = liveRecognizer.getRecognizer();
         try{
             // This flag cannot be read in the toggle method since it will prevent the window to open at all times, not only when reading
             // Disable the window to be opened once the recognizer is running - driven by the configuration
-            ConfigurationWindow.getInstance().setEnableWindow(!GlobalProperties.getInstance().getPropertyAsBoolean("configurationWindow.disableWindowOnReading"));
+            boolean allowUserToInteractWithConfigurationWindow = (!GlobalProperties.getInstance().getPropertyAsBoolean("configurationWindow.disableWindowOnReading"));
+            ConfigurationWindow.getInstance().setEnableWindow(allowUserToInteractWithConfigurationWindow);
             // Start recognizing
             while (microphone.hasMoreData()) {
                 // Sleep some time so that it won't appear to be flipping through so quickly
@@ -38,8 +39,8 @@ public class AudioDecoderUsingParagraphObjectAndRepetitionOnErrors extends Decod
                 ConfigurationWindow.getInstance().checkReadingRepetition();
 
                 // Get reference word
-                // If the message is to be repeated, then continue reading the same reference
-                // Otherwise continue reading the next line
+                // If the message is to be repeated, then continue reading the same reference (provide the boolean - true)
+                // Otherwise continue reading the next line (provide the boolean - false)
                 Paragraph.Line nextReference = liveRecognizer.getCurrentReference(ConfigurationWindow.getInstance().getMessagesToBeRepeated());
 
                 // If the next word is null or empty then do not proceed
@@ -56,21 +57,21 @@ public class AudioDecoderUsingParagraphObjectAndRepetitionOnErrors extends Decod
                 // If the text is to be repeated to read then keep in the same line for 'X' amount of times,
                 // otherwise continue reading the next line
                 highlightTextToRecognize(nextReference.getTrimmedWord(), nextReference.getInit(), nextReference.getEnd());
-                TextWindow.getInstance().refresh();// TODO: Test without this function
+                //TextWindow.getInstance().refresh();
 
                 // Display the next word in the Debugger Window
                 DebuggerWindow.getInstance().addTextLineToPanel("+[" + nextReference.getTrimmedWord() + "]+");
 
-                // Send next word to be recognized
-//                edu.cmu.sphinx.result.Result result = recognizer.recognize(nextReference.getTrimmedWord());
-//                RecognizerWindow.getInstance().addTextToPanel("Result [ " + result.getBestFinalResultNoFiller() + " ] " + EnvironmentUtils.NEW_LINE);
+                // Send next word to be recognized in order to find this data in the microphone reading
+                edu.cmu.sphinx.result.Result result = recognizer.recognize(nextReference.getTrimmedWord());
+                RecognizerWindow.getInstance().addTextToPanel("Result [ " + result.getBestFinalResultNoFiller() + " ] " + EnvironmentUtils.NEW_LINE);
                 // Display recognized speech in the Recognized Window
                 String hypothesis = (liveRecognizer.getHypothesis() != null ? liveRecognizer.getHypothesis().trim() : "");
                 RecognizerWindow.getInstance().addTextToPanel(hypothesis + EnvironmentUtils.NEW_LINE);
 
                 // Highlight the line to be recognized
                 removePreviousTextToRecognize();
-                TextWindow.getInstance().refresh();
+                //TextWindow.getInstance().refresh();
 
                 // The Program has stopped recognizing but the Thread is still running - check the state of the toolBar
                 if(!RecognizerActionToolbar.getInstance().isEndState()){
@@ -79,7 +80,7 @@ public class AudioDecoderUsingParagraphObjectAndRepetitionOnErrors extends Decod
                         // Iterate thought the loop of recognized words - might not be 100% accurate
                         for(String word : hypothesis.split(EnvironmentUtils.SPACE)){
                             recognizedPosition = highlightTextRecognized(word, recognizedPosition, nextReference.getEnd());
-                            TextWindow.getInstance().refresh(); // TODO: Test without this function
+                            //TextWindow.getInstance().refresh();
                         }
                     }
                 }// if
@@ -91,7 +92,7 @@ public class AudioDecoderUsingParagraphObjectAndRepetitionOnErrors extends Decod
                     if(ConfigurationWindow.getInstance().checkRepetitionValidationAndDecreaseCounter()){
                         // Deselect the recognized words on this line
                         removeHighlightedRecognizedText(nextReference.getInit(), nextReference.getEnd());
-                        TextWindow.getInstance().refresh(); // TODO: Test without this function
+                        //TextWindow.getInstance().refresh();
                         //Clear the microphone data
                         microphone.clear();
                     }

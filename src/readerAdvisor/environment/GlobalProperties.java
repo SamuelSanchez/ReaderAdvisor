@@ -3,10 +3,7 @@ package readerAdvisor.environment;
 import readerAdvisor.utils.NumberUtils;
 
 import java.io.FileInputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -62,6 +59,27 @@ public class GlobalProperties {
                 // Load only properties that match this given class name
                 if(name.indexOf('.') > -1 && name.substring(0, name.indexOf('.')).equalsIgnoreCase(className)){
                     properties.put(name,props.getProperty(name));
+                }
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    // TODO: Function to be tested
+    public void loadPropertiesForClasses(LinkedList<String> classes){
+        try{
+            Properties props = new Properties();
+            String softwareProperties = System.getProperty(SOFTWARE_PROPERTIES);
+            props.load(new FileInputStream(softwareProperties != null ? softwareProperties : HARD_CODED_SOFTWARE_PROPERTIES));
+
+            Set<String> propertyNames = props.stringPropertyNames();
+            for(String name : propertyNames){
+                // Load only properties that match this given class name
+                if(name.indexOf('.') > -1){
+                    if(classes.contains(name.substring(0, name.indexOf('.')))){
+                        properties.put(name,props.getProperty(name));
+                    }
                 }
             }
         }catch(Exception e){
