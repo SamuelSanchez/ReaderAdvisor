@@ -1,9 +1,13 @@
 package readerAdvisor.speech.audioDecoder;
 
+import readerAdvisor.environment.EnvironmentUtils;
 import readerAdvisor.file.FileUtils;
 import readerAdvisor.file.MyHighlighter;
 import readerAdvisor.gui.*;
 import readerAdvisor.speech.LiveRecognizer;
+
+import javax.swing.*;
+import java.io.IOException;
 
 /**
  * Created with IntelliJ IDEA.
@@ -78,6 +82,27 @@ public abstract class DecodingThread extends Thread {
             err.printStackTrace();
         }
         return startPosition;
+    }
+
+    /*
+     * Store the Audio file
+     */
+    protected void saveAudioFile(){
+        // Check if the user wants to store the audio file
+        if(ConfigurationWindow.getInstance().storeAudioFile()){
+            StringBuilder audioFilePathAndName = new StringBuilder();
+            audioFilePathAndName.append(ConfigurationWindow.getInstance().getPathToStoreAudioFile()).append(EnvironmentUtils.SEPARATOR);
+            // Remove any extensions that the file name has
+            if(liveRecognizer.getName().lastIndexOf(".") > 0){
+                audioFilePathAndName.append(liveRecognizer.getName().substring(0, liveRecognizer.getName().indexOf(".")));
+            }
+            audioFilePathAndName.append(".").append(ConfigurationWindow.getInstance().getAudioType().getExtension());
+            try{
+                liveRecognizer.saveAudioFile(audioFilePathAndName.toString(), ConfigurationWindow.getInstance().getAudioType());
+            }catch (IOException ex){
+                JOptionPane.showMessageDialog(null, "Unable to store audio file : " + ex.getMessage(), "Audio File Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
     }
 
     // Delay time in milliseconds

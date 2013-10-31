@@ -104,5 +104,8 @@ public class AudioDecoderUsingParagraphObjectAndRepetitionOnErrors extends Decod
         }
         // Remove the last highlight line - the line that was highlighted
         removePreviousTextToRecognize();
+        // TODO: Should the audio be stored only when the reading completed successfully? How about pausing and resetting?
+        // Store the audio file
+        saveAudioFile();
     }
 }

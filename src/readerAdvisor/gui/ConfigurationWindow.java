@@ -9,6 +9,7 @@ import readerAdvisor.gui.tool.MenuBarUtils;
 import readerAdvisor.gui.tool.WindowVariable;
 import readerAdvisor.speech.SpeechManager;
 
+import javax.sound.sampled.AudioFileFormat;
 import javax.swing.*;
 import java.awt.*;
 
@@ -172,11 +173,38 @@ public class ConfigurationWindow extends JDialog {
     private void saveAudioFilePanel(){
         // Create the audio panel and add it to this window
         try{
-            saveAudioFilePanel = new SaveAudioFilePanel();
+            saveAudioFilePanel = new SaveAudioFilePanel(this);
             contentPane.add(saveAudioFilePanel.getPanel());
         }catch(Exception e){
             e.printStackTrace();
         }
+    }
+
+    // --------- Functions of the audio panel ----------- //
+    /*
+    * Return true if the audio file can be save - false otherwise
+    */
+    public synchronized boolean storeAudioFile(){
+        // Ensure that the audio panel has been successfully created
+        return (saveAudioFilePanel != null && saveAudioFilePanel.storeAudioFile());
+    }
+
+    /*
+     * Return the audio type
+     */
+    public synchronized AudioFileFormat.Type getAudioType(){
+        // Ensure that the audio panel has been successfully created
+        if(saveAudioFilePanel == null) return null;
+        return saveAudioFilePanel.getAudioType();
+    }
+
+    /*
+     * Return the full path of the directory where the audio files are to be stored
+     */
+    public synchronized String getPathToStoreAudioFile(){
+        // Ensure that the audio panel has been successfully created
+        if(saveAudioFilePanel == null) return null;
+        return saveAudioFilePanel.getPathToStoreAudioFile();
     }
 
     /*

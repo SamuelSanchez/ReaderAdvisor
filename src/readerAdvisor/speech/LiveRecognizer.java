@@ -15,6 +15,7 @@ import readerAdvisor.gui.DebuggerWindow;
 import readerAdvisor.speech.util.AudioPlayer;
 import readerAdvisor.speech.util.Paragraph;
 
+import javax.sound.sampled.AudioFileFormat;
 import java.io.*;
 import java.net.URL;
 import java.text.DecimalFormat;
@@ -278,7 +279,7 @@ public class LiveRecognizer {
     //-------------------
     // AUDIO METHODS
     //-------------------
-
+    // TODO: Make sure that this function is right
     public void playUtterance() {
         // If it has not been allocated then do not continue
         if(!allocated) return;
@@ -300,6 +301,97 @@ public class LiveRecognizer {
         if(microphone == null) return false;
 
         return microphone.getUtterance() != null;
+    }
+
+    /*
+     * Store the audio file that was captured by the microphone
+     * Provide the file name. The default type is WAVE.
+     */
+    @SuppressWarnings("unused")
+    public void saveAudioFileAsWave(String fileName) throws IOException{
+        saveAudioFile(fileName, AudioFileFormat.Type.WAVE);
+    }
+
+    /*
+    * Store the audio file that was captured by the microphone
+    * Provide the file name. The default type is AIFC.
+    */
+    @SuppressWarnings("unused")
+    public void saveAudioFileAsAifc(String fileName) throws IOException{
+        saveAudioFile(fileName, AudioFileFormat.Type.AIFC);
+    }
+
+    /*
+    * Store the audio file that was captured by the microphone
+    * Provide the file name. The default type is AIFF.
+    */
+    @SuppressWarnings("unused")
+    public void saveAudioFileAsAiff(String fileName) throws IOException{
+        saveAudioFile(fileName, AudioFileFormat.Type.AIFF);
+    }
+
+    /*
+    * Store the audio file that was captured by the microphone
+    * Provide the file name. The default type is AU.
+    */
+    @SuppressWarnings("unused")
+    public void saveAudioFileAsAu(String fileName) throws IOException{
+        saveAudioFile(fileName, AudioFileFormat.Type.AU);
+    }
+
+    /*
+    * Store the audio file that was captured by the microphone
+    * Provide the file name. The default type is SND.
+    */
+    @SuppressWarnings("unused")
+    public void saveAudioFileAsSnd(String fileName) throws IOException{
+        saveAudioFile(fileName, AudioFileFormat.Type.SND);
+    }
+
+    /*
+    * Store the audio file that was captured by the microphone
+    * Provide the file name and the audio type as String (ex. wav, aifc, aiff, au, snd)
+    */
+    @SuppressWarnings("unused")
+    public void saveAudioFile(String fileName, String type) throws IOException{
+        // Store the file
+        saveAudioFile(fileName, getTypeFromString(type));
+    }
+
+    /*
+     * Return the audio type given its String equivalent
+     */
+    public static synchronized AudioFileFormat.Type getTypeFromString(String type){
+        // Set wave type as default
+        AudioFileFormat.Type audioType = AudioFileFormat.Type.WAVE;
+        if(type != null){
+            // WAVE file
+            if(type.equalsIgnoreCase("wave") || type.equalsIgnoreCase("wav")){ /* Do nothing - the default is WAVE */ }
+            // AIFC audio file
+            else if(type.equalsIgnoreCase("aifc")){ audioType = AudioFileFormat.Type.AIFC; }
+            // AIFF audio file
+            else if(type.equalsIgnoreCase("aif") || type.equalsIgnoreCase("aiff")){ audioType = AudioFileFormat.Type.AIFF; }
+            // AU audio file
+            else if(type.equalsIgnoreCase("au")){ audioType = AudioFileFormat.Type.AU; }
+            // SND audio file
+            else if(type.equalsIgnoreCase("snd")){ audioType = AudioFileFormat.Type.SND; }
+        }
+        // Return the Audio Type
+        return audioType;
+    }
+
+    /*
+     * Store the audio file that was captured by the microphone
+     * Provide the file name and the audio type (ex. wav, aifc, aiff, au, snd)
+     */
+    public void saveAudioFile(String fileName, AudioFileFormat.Type type) throws IOException{
+        // If the microphone has not been allocated - then we cannot store it
+        if(allocated && microphone != null){
+            // Do nothing is the file name and type are not appropriate
+            if(fileName != null && !fileName.trim().isEmpty() && type != null){
+                microphone.getUtterance().save(fileName, type);
+            }
+        }
     }
 
     public void resetStatistics() {

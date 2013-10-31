@@ -137,6 +137,7 @@ public class SpeechManager {
         }
     }
 
+    // TODO: Find out if after 'pause' is click the user should read the same line or the next line
     public synchronized void pauseRecognizing(){
         if(liveRecognizer == null){
             DebuggerWindow.getInstance().addTextLineToPanel("LiveRecognizer is null");
