@@ -1,4 +1,4 @@
-package readerAdvisor.speech.util;
+package readerAdvisor.speech.audioPlayer;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
@@ -9,14 +9,15 @@ import javax.sound.sampled.SourceDataLine;
 /**
  * Plays audio data to the System's audio device.
  */
-public class AudioPlayer {
+@Deprecated
+public class AudioPlayerSimple {
 
     private SourceDataLine line;
 
     /**
-     * Constructs a default AudioPlayer.
+     * Constructs a default AudioPlayerSimple.
      */
-    public AudioPlayer() {}
+    public AudioPlayerSimple() {}
 
     /**
      * Plays the given byte array audio to the System's audio device.

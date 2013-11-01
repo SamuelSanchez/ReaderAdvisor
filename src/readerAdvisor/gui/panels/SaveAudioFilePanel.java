@@ -10,16 +10,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
-import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/**
- * Created with IntelliJ IDEA.
- * User: Eduardo
- * Date: 10/27/13
- * Time: 7:36 PM
- * To change this template use File | Settings | File Templates.
- */
 public class SaveAudioFilePanel {
     // Gui Window where this panel belongs
     private JDialog frame;
@@ -37,6 +29,9 @@ public class SaveAudioFilePanel {
         // TODO: For now use this directory for testing purposes - Ideally get the full path of the executing directory and create the audio directory there
         // Create the directory where the audio will be stored - if it does not exits
         String audioDirectoryName = GlobalProperties.getInstance().getProperty("saveAudioFilePanel.audioDirectory", "audioFiles");
+        boolean isAudioToBeRecordedByDefault = GlobalProperties.getInstance().getPropertyAsBoolean("saveAudioFilePanel.recordAudio");
+        checkbox.setSelected(isAudioToBeRecordedByDefault);
+        saveUserReadingTrial.set(isAudioToBeRecordedByDefault);
         EnvironmentUtils.createDirectory(audioDirectoryName, true, true, GlobalProperties.getInstance().getPropertyAsBoolean("saveAudioFilePanel.audioDirectoryDeleteOnExit"));
         // Get a pointer to the audio directory file in order to retrieve its information such as the path file, file name, etc...
         if(audioDirectory == null){
@@ -106,8 +101,8 @@ public class SaveAudioFilePanel {
                 if(e.getClickCount() == 2 && !e.isConsumed()){
                     // Consume the click events
                     e.consume();
-                    // Open the directory and choose a new directory to store the audio files
-                    JFileChooser fileChooser = new JFileChooser();
+                    // Open the directory and choose a new directory to store the audio files - set default location if any
+                    JFileChooser fileChooser = new JFileChooser(audioDirectory);
                     // Only display directories
                     fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
                     // Retrieve the value of the option performed

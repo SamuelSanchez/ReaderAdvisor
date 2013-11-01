@@ -65,22 +65,36 @@ public class MenuBar {
         // Open Audio File
         boolean openAudio = GlobalProperties.getInstance().getPropertyAsBoolean("menuBar.openAudio");
         if(openAudio){
-            JMenu audioMenu = MenuBarUtils.createMenu("Open Audio", "electronic-wave.png");
-            item = MenuBarUtils.createItem("Play File", new ActionListener() {
+            JMenu audioMenu = MenuBarUtils.createMenu("Play Audio", "electronic-wave.png");
+            // Play data that is held in the microphone
+            item = MenuBarUtils.createItem("Microphone data", new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    // TODO : To be implemented
+                    // Only allow the user to open the audio file if there's no recording going on
+                    if(!SpeechManager.getInstance().isMicrophoneRecording()){
+                        AudioPlayerWindow audioPlayerWindow = new AudioPlayerWindow(TextWindow.getInstance());
+                        audioPlayerWindow.setLastOpenPath(ConfigurationWindow.getInstance().getPathToStoreAudioFile());
+                        audioPlayerWindow.displayAudioPlayerWindowWithOpenButton(false);
+                    }
                 }
             });
-            item.setMnemonic('P');
-            audioMenu.add(item);
-
-            item = MenuBarUtils.createItem("Play Last Recorded", new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    // TODO : To be implemented
-                }
-            });
-            item.setMnemonic('P');
+            item.setMnemonic('M');
+            item.setToolTipText("Play the last recorded data");
             item.setAccelerator(KeyStroke.getKeyStroke('P', CTRL_DOWN_MASK));
+            audioMenu.add(item);
+            // Search for an audio file and play it
+            item = MenuBarUtils.createItem("Search...", new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    // Only allow the user to open the audio file if there's no recording going on
+                    if(!SpeechManager.getInstance().isMicrophoneRecording()){
+                        AudioPlayerWindow audioPlayerWindow = new AudioPlayerWindow(TextWindow.getInstance());
+                        audioPlayerWindow.setLastOpenPath(ConfigurationWindow.getInstance().getPathToStoreAudioFile());
+                        audioPlayerWindow.displayAudioPlayerWindowWithOpenButton();
+                    }
+                }
+            });
+            item.setMnemonic('S');
+            item.setToolTipText("Only MP3 format is supported!");
+            item.setAccelerator(KeyStroke.getKeyStroke('F', CTRL_DOWN_MASK));
             audioMenu.add(item);
 
             fileMenu.add(audioMenu);
@@ -126,18 +140,8 @@ public class MenuBar {
         item.setAccelerator(KeyStroke.getKeyStroke('D', CTRL_DOWN_MASK));
         windowView.add(item);
 
-        // Display the window that will display the debug text by the Sphinx API
-        item = MenuBarUtils.createItem("Console Window", "matrix-console.png", new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                ConsoleWindow.getInstance().toggle();
-            }
-        });
-        item.setMnemonic('W');
-        item.setAccelerator(KeyStroke.getKeyStroke("F12"));
-        windowView.add(item);
-
-        boolean displayConfigurationWindow = GlobalProperties.getInstance().getPropertyAsBoolean("configurationWindow.display");
         // Display the window that will have the Configuration of the program
+        boolean displayConfigurationWindow = GlobalProperties.getInstance().getPropertyAsBoolean("configurationWindow.display");
         if(displayConfigurationWindow){
             item = MenuBarUtils.createItem("Configuration Window", "configuration.png", new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -148,6 +152,16 @@ public class MenuBar {
             item.setAccelerator(KeyStroke.getKeyStroke("F11"));
             windowView.add(item);
         }
+
+        // Display the window that will display the debug text by the Sphinx API
+        item = MenuBarUtils.createItem("Console Window", "matrix-console.png", new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                ConsoleWindow.getInstance().toggle();
+            }
+        });
+        item.setMnemonic('W');
+        item.setAccelerator(KeyStroke.getKeyStroke("F12"));
+        windowView.add(item);
 
         fileMenu.add(windowView);
 	    return fileMenu;

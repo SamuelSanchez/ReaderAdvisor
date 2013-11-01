@@ -8,13 +8,6 @@ import readerAdvisor.gui.RecognizerActionToolbar;
 import readerAdvisor.gui.TextWindow;
 import readerAdvisor.speech.util.GrammarUtils;
 
-/**
- * Created with IntelliJ IDEA.
- * User: Eduardo
- * Date: 5/4/13
- * Time: 8:29 PM
- * To change this template use File | Settings | File Templates.
- */
 public class SpeechManager {
     /*
      * Speech Manager and grammar configuration files
@@ -149,6 +142,27 @@ public class SpeechManager {
     // When we stop the recognizer : Stop recording, reset the reference and take away all highlights from the TextWindow
     public synchronized void stopRecognizing(){
         SpeechManager.resetUserRecognition(liveRecognizer);
+    }
+
+    /*
+     * Stop recording data from the microphone - set flag to 'Stop Recording' in sphinx
+     */
+    public synchronized void stopRecording(){
+        if(liveRecognizer != null){
+            liveRecognizer.stopRecording();
+        }
+    }
+
+    /*
+    * Return true if the microphone is recording - false otherwise
+    */
+    public synchronized boolean isMicrophoneRecording(){
+        boolean isMicrophoneRecording = false;
+        // Check if the microphone is recording
+        if(liveRecognizer != null){
+            isMicrophoneRecording = liveRecognizer.isRecording();
+        }
+        return isMicrophoneRecording;
     }
 
     public void finalize() throws Throwable{

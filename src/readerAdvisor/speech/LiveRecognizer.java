@@ -12,7 +12,7 @@ import edu.cmu.sphinx.util.props.PropertyException;
 import edu.cmu.sphinx.util.props.PropertySheet;
 import readerAdvisor.environment.EnvironmentUtils;
 import readerAdvisor.gui.DebuggerWindow;
-import readerAdvisor.speech.util.AudioPlayer;
+import readerAdvisor.speech.audioPlayer.AudioPlayerSimple;
 import readerAdvisor.speech.util.Paragraph;
 
 import javax.sound.sampled.AudioFileFormat;
@@ -23,13 +23,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-/**
- * Created with IntelliJ IDEA.
- * User: Eduardo
- * Date: 5/17/13
- * Time: 12:32 AM
- * To change this template use File | Settings | File Templates.
- */
 public class LiveRecognizer {
     // General Properties
     public static DecimalFormat timeFormat = new DecimalFormat("0.00");
@@ -44,7 +37,7 @@ public class LiveRecognizer {
     private SpeedTracker speedTracker;
     private NISTAlign aligner;
     private boolean allocated;
-    private AudioPlayer audioPlayer;
+    private AudioPlayerSimple audioPlayerSimple;
     private String hypothesis;
 
     // Text Properties
@@ -61,7 +54,7 @@ public class LiveRecognizer {
         this.name = name;
         this.configName = configName;
         this.textToRecognize = textToRecognize;
-        this.audioPlayer = new AudioPlayer();
+        this.audioPlayerSimple = new AudioPlayerSimple();
         this.allocated = false;
         this.showPartialResults = false; // Do not show partial results by default
         this.hasMoreReferences = false;
@@ -279,7 +272,7 @@ public class LiveRecognizer {
     //-------------------
     // AUDIO METHODS
     //-------------------
-    // TODO: Make sure that this function is right
+    @Deprecated
     public void playUtterance() {
         // If it has not been allocated then do not continue
         if(!allocated) return;
@@ -289,7 +282,7 @@ public class LiveRecognizer {
         if (microphone.getUtterance() != null) {
             byte[] audio = microphone.getUtterance().getAudio();
             if (audio != null) {
-                audioPlayer.play(audio, microphone.getUtterance().getAudioFormat());
+                audioPlayerSimple.play(audio, microphone.getUtterance().getAudioFormat());
             }
         }
     }

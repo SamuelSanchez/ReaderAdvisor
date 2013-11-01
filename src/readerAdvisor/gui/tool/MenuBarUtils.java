@@ -10,13 +10,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.EventListener;
 
-/**
- * Created with IntelliJ IDEA.
- * User: Eduardo
- * Date: 5/8/13
- * Time: 12:04 AM
- * To change this template use File | Settings | File Templates.
- */
+@SuppressWarnings("unused")
 public class MenuBarUtils {
 
     private static final Integer ICON_WIDTH = 18;
@@ -52,6 +46,7 @@ public class MenuBarUtils {
         });
     }
 
+    @SuppressWarnings("unused")
     public static void setLockUnlockToolBar(final JToolBar toolBar) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -124,18 +119,25 @@ public class MenuBarUtils {
         return createItem(itemName, null, parentWindow);
     }
 
+    public static JMenuItem createItem(String itemName, String img){
+        return createItem(itemName, img, null);
+    }
+
     public static JMenuItem createItem(String itemName, String img, EventListener parentWindow){
         JMenuItem item = new JMenuItem(itemName);
         item.setIcon(createIcon(img));
         item.setHorizontalTextPosition(JMenuItem.RIGHT);
 
-        // Add Item Listener
-        if(parentWindow instanceof ItemListener){
-            item.addItemListener((ItemListener) parentWindow);
-        }
-        // Add Action Listener
-        if(parentWindow instanceof ActionListener){
-            item.addActionListener((ActionListener) parentWindow);
+        // Only add a listener if the parent window exists
+        if(parentWindow != null){
+            // Add Item Listener
+            if(parentWindow instanceof ItemListener){
+                item.addItemListener((ItemListener) parentWindow);
+            }
+            // Add Action Listener
+            if(parentWindow instanceof ActionListener){
+                item.addActionListener((ActionListener) parentWindow);
+            }
         }
 
         return item;

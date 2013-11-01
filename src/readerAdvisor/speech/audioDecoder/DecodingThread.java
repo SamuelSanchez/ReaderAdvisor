@@ -7,19 +7,16 @@ import readerAdvisor.gui.*;
 import readerAdvisor.speech.LiveRecognizer;
 
 import javax.swing.*;
+import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
-/**
- * Created with IntelliJ IDEA.
- * User: Eduardo
- * Date: 5/17/13
- * Time: 9:12 PM
- * To change this template use File | Settings | File Templates.
- */
 public abstract class DecodingThread extends Thread {
-    // Singleton class
+
     protected LiveRecognizer liveRecognizer;
 
+    @SuppressWarnings("unused")
     public DecodingThread(LiveRecognizer liveRecognizer) {
         super("DecodingThread");
         this.liveRecognizer = liveRecognizer;
@@ -84,6 +81,8 @@ public abstract class DecodingThread extends Thread {
         return startPosition;
     }
 
+    // TODO: Should the audio be stored only when the reading completed successfully? How about pausing and resetting?
+    // TODO: Move this function into a utilities class and pass the needed values - It shouldn't belong to this class
     /*
      * Store the Audio file
      */
@@ -96,7 +95,15 @@ public abstract class DecodingThread extends Thread {
             if(liveRecognizer.getName().lastIndexOf(".") > 0){
                 audioFilePathAndName.append(liveRecognizer.getName().substring(0, liveRecognizer.getName().indexOf(".")));
             }
-            audioFilePathAndName.append(".").append(ConfigurationWindow.getInstance().getAudioType().getExtension());
+            String extension = "." + ConfigurationWindow.getInstance().getAudioType().getExtension();
+            // If this audio file exists then add a suffix to it
+            File file = new File(audioFilePathAndName.toString() + extension);
+            if(file.exists()){
+                SimpleDateFormat dateFormat = new SimpleDateFormat("_yyyy-MM-dd_HH-mm-ss");
+                audioFilePathAndName.append(dateFormat.format(new Date()));
+            }
+            // Add extension to the name
+            audioFilePathAndName.append(extension);
             try{
                 liveRecognizer.saveAudioFile(audioFilePathAndName.toString(), ConfigurationWindow.getInstance().getAudioType());
             }catch (IOException ex){

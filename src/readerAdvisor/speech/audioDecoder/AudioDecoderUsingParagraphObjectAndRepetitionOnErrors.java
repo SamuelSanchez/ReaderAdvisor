@@ -6,21 +6,16 @@ import readerAdvisor.environment.EnvironmentUtils;
 import readerAdvisor.environment.GlobalProperties;
 import readerAdvisor.gui.*;
 import readerAdvisor.speech.LiveRecognizer;
+import readerAdvisor.speech.SpeechManager;
 import readerAdvisor.speech.util.Paragraph;
 
-/**
- * Created with IntelliJ IDEA.
- * User: Eduardo
- * Date: 10/21/13
- * Time: 9:15 PM
- * To change this template use File | Settings | File Templates.
- */
 public class AudioDecoderUsingParagraphObjectAndRepetitionOnErrors extends DecodingThread {
 
     public AudioDecoderUsingParagraphObjectAndRepetitionOnErrors(LiveRecognizer liveRecognizer){
         super("AudioDecoderUsingParagraphObjectAndRepetitionOnErrors", liveRecognizer);
     }
 
+    // This method will only be called once the microphone started recording data
     public void run(){
         Microphone microphone = liveRecognizer.getMicrophone();
         Recognizer recognizer = liveRecognizer.getRecognizer();
@@ -102,8 +97,12 @@ public class AudioDecoderUsingParagraphObjectAndRepetitionOnErrors extends Decod
             // Enable the window to be opened once the recognizer has stopped running
             ConfigurationWindow.getInstance().setEnableWindow(true);
         }
+        // TODO: Put the below functions into a exit function at the parent class - just call that class
+        // Stop recording data from the microphone
+        SpeechManager.getInstance().stopRecording();
         // Remove the last highlight line - the line that was highlighted
         removePreviousTextToRecognize();
+        //TextWindow.getInstance().refresh();
         // TODO: Should the audio be stored only when the reading completed successfully? How about pausing and resetting?
         // Store the audio file
         saveAudioFile();
