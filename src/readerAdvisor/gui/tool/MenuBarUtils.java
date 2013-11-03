@@ -1,6 +1,8 @@
 package readerAdvisor.gui.tool;
 
+import readerAdvisor.MainApp;
 import readerAdvisor.environment.EnvironmentUtils;
+import readerAdvisor.environment.GlobalProperties;
 import readerAdvisor.file.FileUtils;
 
 import javax.swing.*;
@@ -8,6 +10,7 @@ import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 import java.awt.*;
 import java.awt.event.*;
+import java.net.MalformedURLException;
 import java.util.EventListener;
 
 @SuppressWarnings("unused")
@@ -110,8 +113,14 @@ public class MenuBarUtils {
             Image img = new ImageIcon(imgURL).getImage();
             return new ImageIcon(img.getScaledInstance(w, h, Image.SCALE_SMOOTH), description);
         } else {
-            System.err.println("Couldn't find file: " + EnvironmentUtils.ICON_DIRECTORY + name);
-            return null;
+            try {
+                imgURL = new java.net.URL(GlobalProperties.getInstance().getProperty("EnvironmentUtils.iconDirectory") + name);
+                Image img = new ImageIcon(imgURL).getImage();
+                return new ImageIcon(img.getScaledInstance(w, h, Image.SCALE_SMOOTH), description);
+            } catch (MalformedURLException e) {
+                System.err.println("Couldn't find file: " + GlobalProperties.getInstance().getProperty("EnvironmentUtils.iconDirectory") + name);
+                return null;
+            }
         }
     }
 

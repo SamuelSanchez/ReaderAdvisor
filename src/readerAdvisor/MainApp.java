@@ -11,6 +11,8 @@ import readerAdvisor.gui.TextWindow;
 * To change this template use File | Settings | File Templates.
 */
 public class MainApp {
+    // To run the class from the command line or from an IDE
+    // VM Options : -server -XX:+PrintGCDetails -Dfrontend=epFrontEnd -Dmicrophone[keepLastAudio]=true -DconfigurationFile=script/software.properties
     public static void main(String[] args){
         try{
             // Initiate the GUI Environment Settings

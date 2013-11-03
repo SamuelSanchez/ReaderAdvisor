@@ -1,19 +1,19 @@
 package readerAdvisor.gui;
 
+import edu.cmu.sphinx.frontend.window.RaisedCosineWindower;
+import edu.cmu.sphinx.tools.audio.AudioData;
+import edu.cmu.sphinx.tools.audio.AudioPanel;
+import edu.cmu.sphinx.util.props.PropertySheet;
 import readerAdvisor.gui.tool.MenuBarUtils;
 import readerAdvisor.gui.tool.PlayingTimer;
 import readerAdvisor.speech.audioPlayer.AudioPlayer;
 
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 
+import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.*;
@@ -26,7 +26,8 @@ public class AudioPlayerWindow extends JDialog implements ActionListener {
 
 	private boolean isPlaying = false;
 	private boolean isPause = false;
-	
+
+    private AudioInputStream microphoneAudio = null;
 	private String audioFilePath;
 	private String lastOpenPath;
 	
@@ -40,7 +41,15 @@ public class AudioPlayerWindow extends JDialog implements ActionListener {
 	private JButton buttonPause = new JButton("Pause");
 	
 	private JSlider sliderTime = new JSlider();
-	
+
+    // ------------------- Audio and Spectrogram Panel ------------------- //
+    private PropertySheet propertySheet = null;
+    private JPanel audioWaveAndCheckBoxPanel = new JPanel(new BorderLayout());
+    private JCheckBox audioWaveCheckBox = new JCheckBox("Display waves and spectrogram");
+    private JPanel audioWavePanel = new JPanel(new FlowLayout());
+    private JScrollPane audioWaveScrollPanel = new JScrollPane(audioWavePanel);
+    private boolean displayVisualAudio = false;
+
 	//-------------------- Create action button icons --------------------//
 	private ImageIcon iconOpen = MenuBarUtils.createIcon("open_audio.png");
 	private ImageIcon iconPlay = MenuBarUtils.createIcon("play_audio.png");
@@ -75,9 +84,7 @@ public class AudioPlayerWindow extends JDialog implements ActionListener {
             public void windowClosing(WindowEvent e) {
                 setVisible(true);
                 // If the audio is playing then stop it before the window closes
-                System.out.println("Window is closing");
                 if (isPlaying) {
-                    System.out.println("Window is closing********************************");
                     // Interrupt threads
                     timer.reset();
                     timer.interrupt();
@@ -97,10 +104,28 @@ public class AudioPlayerWindow extends JDialog implements ActionListener {
 
     }
 
+    /*
+     * Display the audio player with the button to select the audio files
+     * if no audio stream input has been passed to this class
+     */
+    @SuppressWarnings("unused")
+    public void displayAudioPlayerWindow(){
+        displayAudioPlayerWindowWithOpenButton(microphoneAudio == null);
+    }
+
+    /*
+     * Display the audio player with the button to select wave files
+     */
+    @SuppressWarnings("unused")
     public void displayAudioPlayerWindowWithOpenButton() {
         displayAudioPlayerWindowWithOpenButton(true);
     }
 
+    /*
+     * Display the audio player with/without the button to select audio files
+     * true - display the button and play wave files
+     * false - play microphone data
+     */
     public void displayAudioPlayerWindowWithOpenButton(boolean displayOpenButton){
         // Create the GUI buttons
         createDisplayWindow(displayOpenButton);
@@ -113,7 +138,45 @@ public class AudioPlayerWindow extends JDialog implements ActionListener {
     }
 
     private void createDisplayWindow(boolean displayOpenButton){
-        this.setLayout(new GridBagLayout());
+        this.setLayout(new BorderLayout());
+
+        // Add the Audio and Spectrogram panel - Only for the microphone data
+        if(microphoneAudio != null){
+            try{
+                if(displayVisualAudio){
+                    // Display the audio energy in a panel
+                    createVisualAudioPanel(new AudioData(microphoneAudio));
+                    audioWaveScrollPanel.setVisible(false);
+                    // Event listeners
+                    audioWaveCheckBox.addItemListener(new ItemListener() {
+                        @Override
+                        public void itemStateChanged(ItemEvent e) {
+                            int state = e.getStateChange();
+                            // Enable - Save audio file
+                            if (state == 1) {
+                                audioWaveAndCheckBoxPanel.setSize(getSize());
+                                audioWaveScrollPanel.setVisible(true);
+                            }
+                            // Disable - Do not save audio file
+                            if (state == 2) {
+                                audioWaveScrollPanel.setVisible(false);
+                            }
+                            // TODO: Find out how to fix the window size
+                            pack();
+                            repaint();
+                        }
+                    });
+                    // Add visual audio panel
+                    audioWaveAndCheckBoxPanel.add(audioWaveCheckBox, BorderLayout.NORTH);
+                    audioWaveAndCheckBoxPanel.add(audioWaveScrollPanel, BorderLayout.CENTER);
+                    this.add(audioWaveAndCheckBoxPanel, BorderLayout.NORTH);
+                }
+            }catch (IOException ioe){
+                ioe.printStackTrace();
+            }
+        }
+
+        JPanel audioPlayerPanel = new JPanel(new GridBagLayout());
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.insets = new Insets(5, 5, 5, 5);
         constraints.anchor = GridBagConstraints.WEST;
@@ -139,18 +202,18 @@ public class AudioPlayerWindow extends JDialog implements ActionListener {
         constraints.gridx = 0;
         constraints.gridy = 0;
         constraints.gridwidth = 3;
-        this.add(labelFileName, constraints);
+        audioPlayerPanel.add(labelFileName, constraints);
 
         constraints.anchor = GridBagConstraints.CENTER;
         constraints.gridy = 1;
         constraints.gridwidth = 1;
-        this.add(labelTimeCounter, constraints);
+        audioPlayerPanel.add(labelTimeCounter, constraints);
 
         constraints.gridx = 1;
-        this.add(sliderTime, constraints);
+        audioPlayerPanel.add(sliderTime, constraints);
 
         constraints.gridx = 2;
-        this.add(labelDuration, constraints);
+        audioPlayerPanel.add(labelDuration, constraints);
 
         // Add the buttons panel
         JPanel panelButtons = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 5));
@@ -171,7 +234,20 @@ public class AudioPlayerWindow extends JDialog implements ActionListener {
             buttonOpen.addActionListener(this);
         }
 
-        this.add(panelButtons, constraints);
+        audioPlayerPanel.add(panelButtons, constraints);
+
+        // Microphone data will be played
+        if(!displayOpenButton){
+            // Display the message whether there's data to be played or not
+            labelFileName.setText("Playing File: " + audioFilePath);
+            // Audio stream available
+            if(microphoneAudio != null){
+                buttonPlay.setEnabled(true);
+                buttonPause.setEnabled(false);
+            }
+        }
+        // Add Audio Player Panel to the main window
+        this.add(audioPlayerPanel, BorderLayout.CENTER);
     }
 
 	/**
@@ -207,6 +283,41 @@ public class AudioPlayerWindow extends JDialog implements ActionListener {
         this.lastOpenPath = lastOpenPath;
     }
 
+    /*
+     * Set the microphone audio to play
+     */
+    public void setMicrophoneData(AudioInputStream microphoneAudio){
+        this.microphoneAudio = microphoneAudio;
+    }
+
+    /*
+     * Returns the input stream data
+     */
+    public AudioInputStream getMicrophoneData(){
+        return this.microphoneAudio;
+    }
+
+    /*
+     * Set the name of the path of the audio being played
+     */
+    public void setFullNameOfAudioToPlay(String audioToPlay){
+        this.audioFilePath = audioToPlay;
+    }
+
+    /*
+     * Set Sphinx PropertySheet in order to display the audio panel
+     */
+    public void setPropertySheet(PropertySheet propertySheet){
+        this.propertySheet = propertySheet;
+    }
+
+    /*
+     * True - Display the audio wave, false - otherwise
+     */
+    public void setDisplayVisualAudio(boolean displayVisualAudio){
+        this.displayVisualAudio = displayVisualAudio;
+    }
+
 	private void openFile() {
 		JFileChooser fileChooser;
 		
@@ -224,11 +335,6 @@ public class AudioPlayerWindow extends JDialog implements ActionListener {
 
 			@Override
 			public boolean accept(File file) {
-				/*if (file.isDirectory()) {
-					return true;
-				} else {
-					return file.getName().toLowerCase().endsWith(".wav");
-				}*/
                 return (file.isDirectory() || file.getName().toLowerCase().endsWith(".wav"));
 			}
 		};
@@ -275,17 +381,25 @@ public class AudioPlayerWindow extends JDialog implements ActionListener {
 					
 					buttonPause.setText("Pause");
 					buttonPause.setEnabled(true);
-					
-					player.load(audioFilePath);
+
+                    // If the microphone stream is available, then use it
+                    if(microphoneAudio != null){
+                        // Reset the data before playing it to make sure that it is usable
+                        microphoneAudio.reset();
+                        player.load(microphoneAudio);
+                    }
+                    else{
+					    player.load(audioFilePath);
+                    }
 					timer.setAudioClip(player.getAudioClip());
 					labelFileName.setText("Playing File: " + audioFilePath);
 					sliderTime.setMaximum((int) player.getClipSecondLength());
 					
 					labelDuration.setText(player.getClipLengthString());
+                    // Play the audio at once
 					player.play();
-					
+					// Reset the controls
 					resetControls();
-
 				} catch (UnsupportedAudioFileException ex) {
 					JOptionPane.showMessageDialog(AudioPlayerWindow.this,
 							"The audio format is unsupported!", "Error", JOptionPane.ERROR_MESSAGE);
@@ -308,6 +422,17 @@ public class AudioPlayerWindow extends JDialog implements ActionListener {
 
 		playbackThread.start();
 	}
+
+    /*
+     * Create the Audio panel and Spectrogram panel
+     */
+    private void createVisualAudioPanel(AudioData audioData){
+        // Add audio and spectrogram panels
+        float windowShiftInMs = propertySheet.getFloat(RaisedCosineWindower.PROP_WINDOW_SHIFT_MS);
+        float windowShiftInSamples = windowShiftInMs * audioData.getAudioFormat().getSampleRate() / 1000.0f;
+        AudioPanel audioPanel = new AudioPanel(audioData, 1.0f/windowShiftInSamples, 0.004f);
+        audioWavePanel.add(audioPanel);
+    }
 
 	private void stopPlaying() {
 		isPause = false;

@@ -46,6 +46,7 @@ Project information to be disclosed soon.
     <path id="run.classpath">
 		<pathelement path="${package_name}"/>
         <pathelement location="${lib_dir}/sphinx4.jar"/>
+        <pathelement location="${lib_dir}/batch.jar"/>
     </path>
 
    <tstamp>

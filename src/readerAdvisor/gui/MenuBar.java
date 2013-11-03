@@ -73,6 +73,17 @@ public class MenuBar {
                     if(!SpeechManager.getInstance().isMicrophoneRecording()){
                         AudioPlayerWindow audioPlayerWindow = new AudioPlayerWindow(TextWindow.getInstance());
                         audioPlayerWindow.setLastOpenPath(ConfigurationWindow.getInstance().getPathToStoreAudioFile());
+                        // ---------- Will play microphone data ---------- //
+                        //Pass the name of the files being read and the microphone data to the audio player gui
+                        String recognizerName = SpeechManager.getInstance().getLiveRecognizerName();
+                        audioPlayerWindow.setFullNameOfAudioToPlay(recognizerName != null ? recognizerName : "[No recorded audio to be played]");
+                        audioPlayerWindow.setMicrophoneData(SpeechManager.getInstance().getMicrophoneAudioStream());
+                        // ---------- Will display visual audio data ---------- //
+                        // Pass Sphinx properties to the AudioPlayer - will help retrieving audio information to draw the Audio and Spectrogram panel
+                        audioPlayerWindow.setPropertySheet(SpeechManager.getInstance().getPropertySheet());
+                        // Display the audio wave
+                        audioPlayerWindow.setDisplayVisualAudio(GlobalProperties.getInstance().getPropertyAsBoolean("audioPlayerWindow.displayVisualAudio"));
+                        // Never display the open button - Display the gui
                         audioPlayerWindow.displayAudioPlayerWindowWithOpenButton(false);
                     }
                 }
@@ -88,6 +99,7 @@ public class MenuBar {
                     if(!SpeechManager.getInstance().isMicrophoneRecording()){
                         AudioPlayerWindow audioPlayerWindow = new AudioPlayerWindow(TextWindow.getInstance());
                         audioPlayerWindow.setLastOpenPath(ConfigurationWindow.getInstance().getPathToStoreAudioFile());
+                        // Display the gui
                         audioPlayerWindow.displayAudioPlayerWindowWithOpenButton();
                     }
                 }

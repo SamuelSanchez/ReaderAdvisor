@@ -58,6 +58,22 @@ public class AudioPlayer implements LineListener {
 
 		audioClip.open(audioStream);
 	}
+
+    /*
+     * Load audio stream before playing back
+     *
+     * @param audioFilePath
+	 *            Audio stream file.
+	 * @throws IOException
+	 * @throws LineUnavailableException
+     */
+    public void load(AudioInputStream audioStream) throws IOException, LineUnavailableException {
+        AudioFormat format = audioStream.getFormat();
+        DataLine.Info info = new DataLine.Info(Clip.class, format);
+        audioClip = (Clip) AudioSystem.getLine(info);
+        audioClip.addLineListener(this);
+        audioClip.open(audioStream);
+    }
 	
 	public long getClipSecondLength() {
 		return audioClip.getMicrosecondLength() / 1000000;

@@ -1,7 +1,9 @@
 package readerAdvisor.speech;
 
 import edu.cmu.sphinx.decoder.ResultListener;
+import edu.cmu.sphinx.frontend.FrontEnd;
 import edu.cmu.sphinx.frontend.util.Microphone;
+import edu.cmu.sphinx.frontend.util.StreamDataSource;
 import edu.cmu.sphinx.instrumentation.AccuracyTracker;
 import edu.cmu.sphinx.instrumentation.SpeedTracker;
 import edu.cmu.sphinx.recognizer.Recognizer;
@@ -11,11 +13,13 @@ import edu.cmu.sphinx.util.props.ConfigurationManager;
 import edu.cmu.sphinx.util.props.PropertyException;
 import edu.cmu.sphinx.util.props.PropertySheet;
 import readerAdvisor.environment.EnvironmentUtils;
+import readerAdvisor.environment.GlobalProperties;
 import readerAdvisor.gui.DebuggerWindow;
 import readerAdvisor.speech.audioPlayer.AudioPlayerSimple;
 import readerAdvisor.speech.util.Paragraph;
 
 import javax.sound.sampled.AudioFileFormat;
+import javax.sound.sampled.AudioInputStream;
 import java.io.*;
 import java.net.URL;
 import java.text.DecimalFormat;
@@ -32,6 +36,9 @@ public class LiveRecognizer {
     // Recognizer properties
     private String name;
     private String configName;
+    private PropertySheet propertySheet = null;
+    private FrontEnd frontEnd = null;
+    private StreamDataSource streamDataSource = null;
     private Recognizer recognizer;
     private Microphone microphone;
     private SpeedTracker speedTracker;
@@ -190,6 +197,9 @@ public class LiveRecognizer {
             if (!allocated) {
                 URL url = new File(configName).toURI().toURL();
                 ConfigurationManager cm = new ConfigurationManager(url);
+                propertySheet = cm.getPropertySheet(GlobalProperties.getInstance().getProperty("liveRecognizer.sphinx.component.propertySheet","windower"));
+                frontEnd = (FrontEnd) cm.lookup(GlobalProperties.getInstance().getProperty("liveRecognizer.sphinx.component.frontEnd","frontEnd"));
+                streamDataSource = (StreamDataSource) cm.lookup("streamDataSource");
                 recognizer = (Recognizer) cm.lookup("recognizer");
                 microphone = (Microphone) cm.lookup("microphone");
                 speedTracker = (SpeedTracker) cm.lookup("speedTracker");
@@ -385,6 +395,42 @@ public class LiveRecognizer {
                 microphone.getUtterance().save(fileName, type);
             }
         }
+    }
+
+    /*
+     * Return the AudioInputStream from the microphone
+     */
+    public AudioInputStream getAudioStream(){
+        AudioInputStream microphoneAudio = null;
+        if(allocated && microphone != null){
+            byte[] audio = microphone.getUtterance().getAudio();
+            microphoneAudio = new AudioInputStream(new ByteArrayInputStream(audio), microphone.getAudioFormat(), audio.length);
+        }
+        return microphoneAudio;
+    }
+
+    /*
+     * Return the windower property sheet
+     * It is helpful for retrieving Audio properties to draw the audio and spectrogram panel
+     */
+    public PropertySheet getPropertySheet(){
+        return propertySheet;
+    }
+
+    /*
+    * Return the windower property sheet
+    * It is helpful for retrieving Audio properties to draw the audio and spectrogram panel
+    */
+    public FrontEnd getFrontEnd(){
+        return frontEnd;
+    }
+
+    /*
+    * Return the windower property sheet
+    * It is helpful for retrieving Audio properties to draw the audio and spectrogram panel
+    */
+    public StreamDataSource getStreamDataSource(){
+        return streamDataSource;
     }
 
     public void resetStatistics() {

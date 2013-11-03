@@ -59,7 +59,7 @@ public class AudioDecoderUsingParagraphObjectAndRepetitionOnErrors extends Decod
 
                 // Send next word to be recognized in order to find this data in the microphone reading
                 edu.cmu.sphinx.result.Result result = recognizer.recognize(nextReference.getTrimmedWord());
-                RecognizerWindow.getInstance().addTextToPanel("Result [ " + result.getBestFinalResultNoFiller() + " ] " + EnvironmentUtils.NEW_LINE);
+                //RecognizerWindow.getInstance().addTextToPanel("Result [ " + result.getBestFinalResultNoFiller() + " ] " + EnvironmentUtils.NEW_LINE);
                 // Display recognized speech in the Recognized Window
                 String hypothesis = (liveRecognizer.getHypothesis() != null ? liveRecognizer.getHypothesis().trim() : "");
                 RecognizerWindow.getInstance().addTextToPanel(hypothesis + EnvironmentUtils.NEW_LINE);

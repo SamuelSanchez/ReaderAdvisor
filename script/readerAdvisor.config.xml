@@ -159,6 +159,7 @@
     
     <component name="mfcFrontEnd" type="edu.cmu.sphinx.frontend.FrontEnd">
         <propertylist name="pipeline">
+            <item>streamDataSource </item>
             <item>microphone </item>
             <item>preemphasizer </item>
             <item>windower </item>
@@ -175,6 +176,7 @@
     <!-- ******************************************************** -->
     <component name="epFrontEnd" type="edu.cmu.sphinx.frontend.FrontEnd">
         <propertylist name="pipeline">
+            <item>streamDataSource </item>
             <item>microphone </item>
             <item>speechClassifier </item>
             <item>speechMarker </item>
@@ -197,7 +199,11 @@
         <!--<property name="closeBetweenUtterances" value="false"/>-->  <!--COMMENT-->
     </component>
 
-    
+    <component name="streamDataSource"
+               type="edu.cmu.sphinx.frontend.util.StreamDataSource">
+        <property name="sampleRate" value="16000"/>
+    </component>
+
     <component name="speechClassifier" 
                 type="edu.cmu.sphinx.frontend.endpoint.SpeechClassifier">
         <property name="threshold" value="13"/>

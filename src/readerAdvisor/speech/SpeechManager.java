@@ -1,5 +1,8 @@
 package readerAdvisor.speech;
 
+import edu.cmu.sphinx.frontend.FrontEnd;
+import edu.cmu.sphinx.frontend.util.StreamDataSource;
+import edu.cmu.sphinx.util.props.PropertySheet;
 import readerAdvisor.environment.GlobalProperties;
 import readerAdvisor.file.FileUtils;
 import readerAdvisor.file.HighlightItem;
@@ -7,6 +10,8 @@ import readerAdvisor.gui.DebuggerWindow;
 import readerAdvisor.gui.RecognizerActionToolbar;
 import readerAdvisor.gui.TextWindow;
 import readerAdvisor.speech.util.GrammarUtils;
+
+import javax.sound.sampled.AudioInputStream;
 
 public class SpeechManager {
     /*
@@ -130,7 +135,6 @@ public class SpeechManager {
         }
     }
 
-    // TODO: Find out if after 'pause' is click the user should read the same line or the next line
     public synchronized void pauseRecognizing(){
         if(liveRecognizer == null){
             DebuggerWindow.getInstance().addTextLineToPanel("LiveRecognizer is null");
@@ -163,6 +167,64 @@ public class SpeechManager {
             isMicrophoneRecording = liveRecognizer.isRecording();
         }
         return isMicrophoneRecording;
+    }
+
+    /*
+     * Return the microphone audio stream
+     */
+    public synchronized AudioInputStream getMicrophoneAudioStream(){
+        AudioInputStream microphoneStream = null;
+        if(liveRecognizer != null){
+            microphoneStream = liveRecognizer.getAudioStream();
+        }
+        return microphoneStream;
+    }
+
+    /*
+     * Return the name of the live recognizer that is currently in used
+     */
+    public synchronized String getLiveRecognizerName(){
+        String liveRecognizerName = null;
+        if(liveRecognizer != null){
+            liveRecognizerName = liveRecognizer.getName();
+        }
+        return liveRecognizerName;
+    }
+
+    /*
+    * Return the windower property sheet
+    * It is helpful for retrieving Audio properties to draw the audio and spectrogram panel
+    */
+    public synchronized PropertySheet getPropertySheet(){
+        PropertySheet propertySheet = null;
+        if(liveRecognizer != null){
+            propertySheet = liveRecognizer.getPropertySheet();
+        }
+        return propertySheet;
+    }
+
+    /*
+    * Return the FrontEnd property
+    * It is helpful for retrieving Audio properties to draw the audio and spectrogram panel
+    */
+    public synchronized FrontEnd getFrontEnd(){
+        FrontEnd frontEnd = null;
+        if(liveRecognizer != null){
+            frontEnd = liveRecognizer.getFrontEnd();
+        }
+        return frontEnd;
+    }
+
+    /*
+    * Return the StreamDataSource property
+    * It is helpful for retrieving Audio properties to draw the audio and spectrogram panel
+    */
+    public synchronized StreamDataSource getStreamDataSource(){
+        StreamDataSource streamDataSource = null;
+        if(liveRecognizer != null){
+            streamDataSource = liveRecognizer.getStreamDataSource();
+        }
+        return streamDataSource;
     }
 
     public void finalize() throws Throwable{
