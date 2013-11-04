@@ -5,6 +5,7 @@ import readerAdvisor.file.HighlightComboBox;
 import readerAdvisor.file.HighlightItem;
 import readerAdvisor.gui.panels.RepeatReadingLinePanel;
 import readerAdvisor.gui.panels.SaveAudioFilePanel;
+import readerAdvisor.gui.panels.SphinxConfigurationPanel;
 import readerAdvisor.gui.tool.MenuBarUtils;
 import readerAdvisor.gui.tool.WindowVariable;
 import readerAdvisor.speech.SpeechManager;
@@ -12,6 +13,10 @@ import readerAdvisor.speech.SpeechManager;
 import javax.sound.sampled.AudioFileFormat;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.
@@ -25,11 +30,18 @@ public class ConfigurationWindow extends JDialog {
     // Singleton Class
     private static volatile ConfigurationWindow configurationWindow = new ConfigurationWindow();
     private Container contentPane;
+    /*
+     * This variable was used to stop the user from opening the Configuration Window when
+     * Speech recognition was in used.
+     * Now, the default setEnable(boolean) properties is used
+     */
+    @Deprecated
     protected volatile boolean enableWindow = true;
 
     // Initialize Panels on this Windows
-    protected volatile RepeatReadingLinePanel readingLinePanel = new RepeatReadingLinePanel(this);
+    protected volatile RepeatReadingLinePanel readingLinePanel = null;
     protected volatile SaveAudioFilePanel saveAudioFilePanel = null;
+    protected volatile SphinxConfigurationPanel sphinxConfigurationPanel = null;
 
     private ConfigurationWindow(){
         // true - Disable all other windows when this Window is open
@@ -49,10 +61,12 @@ public class ConfigurationWindow extends JDialog {
     }
 
     // Do not allow the users to Open this window once that it is closed - Usually managed by the current Audio Decoder
+    @Deprecated
     public synchronized void setEnableWindow(boolean enableWindow){
         this.enableWindow = enableWindow;
     }
 
+    @Deprecated
     public synchronized boolean getEnableWindow(){
         return enableWindow;
     }
@@ -85,6 +99,22 @@ public class ConfigurationWindow extends JDialog {
         this.sphinxConfigurationPanel();
         // Set Image Icon
         this.setIconImage(MenuBarUtils.createIcon("configuration.png").getImage());
+        // Ask the user whether he wants to store the modified configurations
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                // The window must be set to visible for this event to work
+                setVisible(true);
+                // If the configuration has changed ask if they should be stored
+                // TODO: Check if the properties map file and the properties displayed by the gui are different
+                Map<String,String> properties = GlobalProperties.getInstance().getPropertiesMap();
+                if(properties != null){
+                    for(String prop : properties.keySet()){
+                        System.out.println(prop + " : " + properties.get(prop));
+                    }
+                }
+            }
+        });
     }
 
     /*
@@ -95,6 +125,7 @@ public class ConfigurationWindow extends JDialog {
     private void repeatReadingLinePanel(){
         // Create the reading panel and add it to this window
         try{
+            readingLinePanel = new RepeatReadingLinePanel(this);
             contentPane.add(readingLinePanel.getPanel());
         }catch(Exception e){
             e.printStackTrace();
@@ -232,9 +263,21 @@ public class ConfigurationWindow extends JDialog {
      *    Provide the file will 'read-only' properties. If file tries to get deleted, display error message.
      */
     private void sphinxConfigurationPanel(){
-        JPanel panel = new JPanel(new FlowLayout());
-        panel.setBorder(BorderFactory.createTitledBorder("Sphinx Configuration"));
-        contentPane.add(panel);
+        // Create the audio panel and add it to this window
+        try{
+            sphinxConfigurationPanel = new SphinxConfigurationPanel(this);
+            contentPane.add(sphinxConfigurationPanel.getPanel());
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    /*
+     * Return the delay time in Milliseconds that the Sphinx Recognizer should wait before proceeding to recognize
+     * the next set of audio from the microphone
+     */
+    public int getDelayTimeInMilliSeconds(){
+        return sphinxConfigurationPanel.getDelayTimeInMilliSeconds();
     }
 
     /*
@@ -256,9 +299,9 @@ public class ConfigurationWindow extends JDialog {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 // Only Open the window 'toggling' when it is enabled
-                if(enableWindow){
+                //if(enableWindow){
                     setVisible(true);
-                }
+                //}
             }
         });
     }
@@ -267,9 +310,9 @@ public class ConfigurationWindow extends JDialog {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 // Only Close the window 'toggling' when it is disabled
-                if(enableWindow){
+                //if(enableWindow){
                     setVisible(false);
-                }
+                //}
             }
         });
     }
@@ -278,9 +321,9 @@ public class ConfigurationWindow extends JDialog {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 // Only toggle the Window when it is enabled
-                if(enableWindow){
+                //if(enableWindow){
                     setVisible(!isVisible());
-                }
+                //}
             }
         });
     }

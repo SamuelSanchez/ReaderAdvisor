@@ -4,6 +4,8 @@ import readerAdvisor.utils.NumberUtils;
 
 import java.io.FileInputStream;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Created with IntelliJ IDEA.
@@ -15,7 +17,7 @@ import java.util.*;
 public class GlobalProperties {
     // TODO : Pass all hardcoded folder names into this path
     private static volatile GlobalProperties globalProperties = new GlobalProperties();
-    private Map<String,String> properties = new HashMap<String,String>();
+    private ConcurrentMap<String,String> properties = new ConcurrentHashMap<String,String>();
     // The name of the configurationFile is defined in the build file.
     private static final String SOFTWARE_PROPERTIES = "configurationFile";
     // In case that the software properties file is not found - HardCode its name
@@ -85,6 +87,14 @@ public class GlobalProperties {
         }catch(Exception e){
             e.printStackTrace();
         }
+    }
+
+    /*
+     * Retrieve the properties map for this software
+     * It contains all the properties of the software
+     */
+    public Map<String,String> getPropertiesMap(){
+        return properties;
     }
 
     public String getProperty(String property){

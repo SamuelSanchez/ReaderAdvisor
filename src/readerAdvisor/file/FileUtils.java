@@ -155,11 +155,43 @@ public class FileUtils {
         }
     }
 
-    private static void saveToFile(File fileName, String file) throws IOException{
+    public static void saveToFile(File fileName, String file) throws IOException{
         BufferedWriter outFile = new BufferedWriter(new FileWriter(fileName));
         outFile.write(file);
         outFile.flush();
         outFile.close();
+    }
+
+    public static String retrieveFileContent(String fileName) throws IOException{
+        BufferedReader reader = new BufferedReader(new FileReader(fileName));
+        // Store all the file data into the buffer
+        StringBuilder buffer = new StringBuilder();
+        String line;
+        // Do not trim the String - Do not modify the text
+        while((line = reader.readLine()) != null){
+            buffer.append(line);
+            buffer.append(EnvironmentUtils.NEW_LINE);
+        }
+        // Remove the last line
+        if(buffer.toString().endsWith(EnvironmentUtils.NEW_LINE)){
+            buffer.replace(0, buffer.length(), buffer.substring(0, (buffer.length() - EnvironmentUtils.NEW_LINE.length())));
+        }
+        reader.close();
+        return buffer.toString();
+    }
+
+    public static boolean deleteFile(String fileName){
+        boolean fileToBeDeleted = false;
+        // Proceed if there's a valid name to retrieve a file
+        if(fileName != null && !fileName.trim().isEmpty()){
+            // Retrieve the file
+            File file = new File(fileName);
+            // Delete the file
+            if(file.delete()){
+                fileToBeDeleted = true;
+            }
+        }
+        return fileToBeDeleted;
     }
 
     public static synchronized String getTextWithoutPath(String text){
@@ -178,6 +210,47 @@ public class FileUtils {
         return text;
     }
 
+    public static synchronized String getPathFromText(String text){
+        String path = null;
+        // Do not proceed if the text is null
+        if(text != null){
+            // Get text until the last back slash
+            if(text.lastIndexOf("\\") != -1){
+                path = text.substring(0, text.lastIndexOf("\\")+1);
+            }
+            // If back slash doesn't exists - then get text until the last forward slash
+            else if(text.lastIndexOf("/") != -1){
+                path = text.substring(0, text.lastIndexOf("/")+1);
+            }
+            // There's not path
+            else{
+                path = "";
+            }
+        }
+        return path;
+    }
+
+    /*
+     * Return all the files in the current directory
+     */
+    public static synchronized File[] getFilesFromFileDirectory(String fileName){
+        File[] files = null;
+        if(fileName != null){
+            File file = new File(fileName);
+            // Perform action only if the file exist
+            if(file.exists()){
+                // Retrieve all the files from the current directory
+                if(file.isDirectory()){
+                    files = file.listFiles();
+                }
+                else{
+                    files = file.getParentFile().listFiles();
+                }
+            }
+        }
+        return files;
+    }
+
     public static void removeHighlights(JEditorPane textPane, MyHighlighter myHighlighter, int startPosition, int endPosition){
         Highlighter.Highlight[] highlights = textPane.getHighlighter().getHighlights();
         for(Highlighter.Highlight highlight : highlights){
@@ -187,6 +260,7 @@ public class FileUtils {
                 textPane.getHighlighter().addHighlight(startPosition, endPosition, null);
 //                textPane.getHighlighter().removeHighlight(highlight);
                 }catch(Exception e){
+                    // TODO: Delete this
                     System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
                     e.printStackTrace();
                 }

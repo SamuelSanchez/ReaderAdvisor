@@ -60,8 +60,8 @@ Project information to be disclosed soon.
     <!-- ********************************************************** -->
     <!-- TODO: Need to delete everything in here except the 'build.xml' file -->
     <target name="clean" description="Cleans all the compiled and Jar files.">
-        <delete file="../exec/readerAdvisor.config.xml" />
-        <delete file="../exec/software.properties" />
+        <!--delete file="../exec/readerAdvisor.config.xml" /-->
+        <!--delete file="../exec/software.properties" /-->
         <delete file="${Jar_name}" />
         <delete dir="${package_name}" />
         <delete dir="../exec/icon" />
@@ -85,6 +85,8 @@ Project information to be disclosed soon.
         </javac>
         <mkdir dir="../exec/lib"/>
         <mkdir dir="../exec/icon"/>
+        <!-- Create files that should not be deleted -->
+        <mkdir dir="../exec/config"/>
         <copy todir="../exec/lib">
             <fileset dir="${lib_dir}" includes="**.jar"/>
         </copy>
@@ -94,8 +96,12 @@ Project information to be disclosed soon.
         <copy todir="../exec">
             <fileset dir="${bld}"/>
         </copy>
+        <!-- Properties that the user might modify -->
+        <copy todir="../exec/config">
+            <fileset dir="config" includes="**.config.xml"/>
+        </copy>
         <copy todir="../exec">
-            <fileset dir="${script}" excludes="build.xml, **.TEMP, **.sh, **.bat"/>
+            <fileset dir="${script}/software.properties"/>
         </copy>
     </target>
 

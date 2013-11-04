@@ -19,15 +19,18 @@ public class AudioDecoderUsingParagraphObjectAndRepetitionOnErrors extends Decod
     public void run(){
         Microphone microphone = liveRecognizer.getMicrophone();
         Recognizer recognizer = liveRecognizer.getRecognizer();
+        // Retrieve the time to wait in MilliSeconds
+        int delayTimeInMilliSeconds = ConfigurationWindow.getInstance().getDelayTimeInMilliSeconds();
         try{
             // This flag cannot be read in the toggle method since it will prevent the window to open at all times, not only when reading
             // Disable the window to be opened once the recognizer is running - driven by the configuration
             boolean allowUserToInteractWithConfigurationWindow = (!GlobalProperties.getInstance().getPropertyAsBoolean("configurationWindow.disableWindowOnReading"));
-            ConfigurationWindow.getInstance().setEnableWindow(allowUserToInteractWithConfigurationWindow);
+            ConfigurationWindow.getInstance().setEnabled(allowUserToInteractWithConfigurationWindow);
             // Start recognizing
             while (microphone.hasMoreData()) {
                 // Sleep some time so that it won't appear to be flipping through so quickly
-                millisecondsToDelay(500);
+                millisecondsToDelay(delayTimeInMilliSeconds);
+                System.out.println("Delay : " + delayTimeInMilliSeconds);
 
                 // Check if the user has repeated reading 'X' amount of times as set in the Configuration Window
                 // If so, then do not ask the user to read again
@@ -59,7 +62,7 @@ public class AudioDecoderUsingParagraphObjectAndRepetitionOnErrors extends Decod
 
                 // Send next word to be recognized in order to find this data in the microphone reading
                 edu.cmu.sphinx.result.Result result = recognizer.recognize(nextReference.getTrimmedWord());
-                //RecognizerWindow.getInstance().addTextToPanel("Result [ " + result.getBestFinalResultNoFiller() + " ] " + EnvironmentUtils.NEW_LINE);
+                RecognizerWindow.getInstance().addTextToPanel("Result [ " + result.getBestFinalResultNoFiller() + " ] " + EnvironmentUtils.NEW_LINE);
                 // Display recognized speech in the Recognized Window
                 String hypothesis = (liveRecognizer.getHypothesis() != null ? liveRecognizer.getHypothesis().trim() : "");
                 RecognizerWindow.getInstance().addTextToPanel(hypothesis + EnvironmentUtils.NEW_LINE);
@@ -95,7 +98,7 @@ public class AudioDecoderUsingParagraphObjectAndRepetitionOnErrors extends Decod
             }// while
         }finally {
             // Enable the window to be opened once the recognizer has stopped running
-            ConfigurationWindow.getInstance().setEnableWindow(true);
+            ConfigurationWindow.getInstance().setEnabled(true);
         }
         // TODO: Put the below functions into a exit function at the parent class - just call that class
         // Stop recording data from the microphone
