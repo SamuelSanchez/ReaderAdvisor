@@ -138,6 +138,7 @@ public class SphinxConfigurationPanel {
         delayPanel.add(new JLabel("Delay Time:"));
         delayPanel.add(delayTimeInMillisecondsSpinner);
         delayPanel.add(new JLabel("Milliseconds"));
+        // TODO: Add the drop down menu of the Sphinx Configuration XML file
         // Add this panels
         parentPanel.add(panel, BorderLayout.CENTER);
         parentPanel.add(delayPanel, BorderLayout.EAST);

@@ -123,6 +123,26 @@ public class FileUtils {
         return fileSummary;
     }
 
+    // Retrieve file using the gui
+    public static synchronized File getFileUsingGui(){
+        File file = null;
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setCurrentDirectory(EnvironmentUtils.getInstance().getCurrentDirectory());
+        int returnVal = fileChooser.showOpenDialog(null);
+        // Retrieve the file - if it was chosen
+        switch (returnVal) {
+            case JFileChooser.APPROVE_OPTION:
+                try{ file = fileChooser.getSelectedFile(); }
+                catch(Exception e){ e.printStackTrace(); }
+                break;
+            case JFileChooser.CANCEL_OPTION:
+                break;
+            case JFileChooser.ERROR_OPTION:
+                break;
+        }
+        return file;
+    }
+
     /* This only shows for the first 'Replace' file - It will not continuously show this message. */
     // Save file
     public static synchronized void saveFile(String file){
