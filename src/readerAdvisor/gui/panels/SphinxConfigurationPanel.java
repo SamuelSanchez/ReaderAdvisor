@@ -2,6 +2,7 @@ package readerAdvisor.gui.panels;
 
 import readerAdvisor.environment.GlobalProperties;
 import readerAdvisor.file.FileUtils;
+import readerAdvisor.file.xml.PropertyElement;
 import readerAdvisor.speech.SpeechManager;
 
 import javax.swing.*;
@@ -10,6 +11,8 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.Vector;
@@ -44,14 +47,34 @@ public class SphinxConfigurationPanel {
 
     // Return the SaveAudioFile panel
     public JPanel getPanel(){
-        JPanel parentPanel = new JPanel(new BorderLayout());
+        JPanel parentPanel = new JPanel(new FlowLayout());
         parentPanel.setBorder(BorderFactory.createTitledBorder("Sphinx Configuration"));
-        // Set up panels
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        // Create the Edit and Delete buttons
         final JButton editButton = new JButton("Edit");
         final JButton deleteButton = new JButton("Delete");
+        // -------------- Set up panels -------------- //
+        // Sphinx configuration 'edit' and 'delete' buttons - advanced panel
+        parentPanel.add(getAdvancedConfigurationMenuHandler(editButton,deleteButton));
+        // Sphinx configuration drop down panel
+        parentPanel.add(getSphinxConfigurationPanel(editButton,deleteButton));
+        // Add Sphinx value panel
+        parentPanel.add(getSphinxValuesPanel());
+        // Sphinx configuration delay time panel
+        parentPanel.add(getDelayMillisecondsPanel());
+        // Disable the delete button if there is no more than one item
+        if(sphinxConfigurations.getItemCount() < 2){
+            deleteButton.setEnabled(false);
+        }
+        // Return the panel
+        return parentPanel;
+    }
+
+    private JPanel getSphinxConfigurationPanel(final JButton editButton, final JButton deleteButton){
+        // Create the advance panel
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         // Sphinx Configuration file to be used next
         populateSphinxConfigurationsDropDown(currentSphinxConfiguration);
+        // Add Event handler to the JComboBox - update all references of the current configuration file
         sphinxConfigurations.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -60,45 +83,58 @@ public class SphinxConfigurationPanel {
                 deleteButton.setToolTipText("Delete - " + sphinxConfigurations.getSelectedItem());
                 // Update the name of the current configuration file - Add Path and Suffix
                 currentSphinxConfiguration = (sphinxConfigurationPath +
-                                             sphinxConfigurations.getSelectedItem() +
-                                             SphinxPropertiesWindow.SphinxConfigurationSuffix);
+                        sphinxConfigurations.getSelectedItem() +
+                        SphinxPropertiesWindow.SphinxConfigurationSuffix);
                 // Update the Sphinx Manager Configuration File
                 SpeechManager.getInstance().setSpeechConfiguration(currentSphinxConfiguration);
             }
         });
+        // Add the Sphinx Configuration drop down to the panel
         panel.add(sphinxConfigurations);
-        // Add the Edit button
+        // Return the panel to the user
+        return panel;
+    }
+
+    /*
+     * Creates the advance menu handler
+     * This menu will configure the Sphinx property file in a advance mode
+     */
+    private JPanel getAdvancedConfigurationMenuHandler(final JButton editButton, final JButton deleteButton){
+        // Create the advance panel
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        // -------- Add the Edit button -------- //
         editButton.setToolTipText("Edit - " + getCleanName(currentSphinxConfiguration));
         editButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                try{
+                try {
                     // Load Sphinx properties in a gui for the user the modify it
                     SphinxPropertiesWindow sphinxPropertiesWindow = new SphinxPropertiesWindow(currentSphinxConfiguration);
                     // If the Sphinx Configuration name is different then update the file
-                    if(!currentSphinxConfiguration.equals(sphinxPropertiesWindow.getSphinxPropertyFileName())){
+                    if (!currentSphinxConfiguration.equals(sphinxPropertiesWindow.getSphinxPropertyFileName())) {
                         // Update the current file
                         currentSphinxConfiguration = sphinxPropertiesWindow.getSphinxPropertyFileName();
                         // Update the Sphinx Manager Configuration File
                         SpeechManager.getInstance().setSpeechConfiguration(currentSphinxConfiguration);
                         populateSphinxConfigurationsDropDown(currentSphinxConfiguration);
                         // Enable the button if there's more than one items
-                        if(sphinxConfigurations.getItemCount() > 1){
+                        if (sphinxConfigurations.getItemCount() > 1) {
                             deleteButton.setEnabled(true);
                         }
                         // Disable the button if there's only one item
-                        else{
+                        else {
                             deleteButton.setEnabled(false);
                         }
                     }
-                }catch (IOException ioe){
+                } catch (IOException ioe) {
                     ioe.printStackTrace();
                     JOptionPane.showMessageDialog(null, ioe.getMessage(), "Sphinx Configuration Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
+        // the edit button to the panel
         panel.add(editButton);
-        // Add the Delete button
+        // -------- Add the Delete button -------- //
         deleteButton.setToolTipText("Delete - " + getCleanName(currentSphinxConfiguration));
         deleteButton.addActionListener(new ActionListener() {
             @Override
@@ -121,29 +157,48 @@ public class SphinxConfigurationPanel {
                 }
             }
         });
-        // Disable the delete button if there is no more than one item
-        if(sphinxConfigurations.getItemCount() < 2){
-            deleteButton.setEnabled(false);
-        }
+        // Add the delete button to the panel
         panel.add(deleteButton);
+        // Return the panel to the user
+        return panel;
+    }
+
+    /*
+     * Populate the delay panel
+     */
+    private JPanel getDelayMillisecondsPanel(){
         // Add Microsecond delay
         JPanel delayPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         final JSpinner delayTimeInMillisecondsSpinner = new JSpinner(new SpinnerNumberModel(delayTimeInMilliSeconds.intValue(), 0, 5000, 100));
         delayTimeInMillisecondsSpinner.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
-                delayTimeInMilliSeconds.set((Integer)delayTimeInMillisecondsSpinner.getValue());
+                delayTimeInMilliSeconds.set((Integer) delayTimeInMillisecondsSpinner.getValue());
             }
         });
         delayPanel.add(new JLabel("Delay Time:"));
         delayPanel.add(delayTimeInMillisecondsSpinner);
         delayPanel.add(new JLabel("Milliseconds"));
-        // TODO: Add the drop down menu of the Sphinx Configuration XML file
-        // Add this panels
-        parentPanel.add(panel, BorderLayout.CENTER);
-        parentPanel.add(delayPanel, BorderLayout.EAST);
+        return delayPanel;
+    }
+
+    /*
+     * Create the Sphinx Value panel that will modify the data dynamically using a drop down
+     */
+    // TODO: Add the XML file - Get the xml from the sphinx drop down then pass it to this function
+    private JPanel getSphinxValuesPanel(){
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        // Create the property value drop down
+        JComboBox<PropertyElement<String>> propertyValueDropDown = new JComboBox<PropertyElement<String>>();
+        panel.add(propertyValueDropDown);
+        // Create the JInputText that will display the value of the element
+        JTextField valueField = new JTextField(4);
+        panel.add(valueField);
+        // Create the Update button
+        JButton uploadButton = new JButton("Update");
+        panel.add(uploadButton);
         // Return the panel
-        return parentPanel;
+        return panel;
     }
 
     /*

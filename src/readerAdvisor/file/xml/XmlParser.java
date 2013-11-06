@@ -50,7 +50,7 @@ public class XmlParser {
     /*
      * Retrieve the XML File from the document
      */
-    public void retrieveXMLFILE() throws IOException, ParserConfigurationException, SAXException{
+    private void retrieveXMLFILE() throws IOException, ParserConfigurationException, SAXException{
         // Create the vector list
         if(document.hasChildNodes()){
             retrieveElements(document.getChildNodes());

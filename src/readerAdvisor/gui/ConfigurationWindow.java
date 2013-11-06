@@ -299,9 +299,8 @@ public class ConfigurationWindow extends JDialog {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 // Only Open the window 'toggling' when it is enabled
-                //if(enableWindow){
-                    setVisible(true);
-                //}
+                pack();
+                setVisible(true);
             }
         });
     }
@@ -310,9 +309,7 @@ public class ConfigurationWindow extends JDialog {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 // Only Close the window 'toggling' when it is disabled
-                //if(enableWindow){
-                    setVisible(false);
-                //}
+                setVisible(false);
             }
         });
     }
@@ -321,9 +318,8 @@ public class ConfigurationWindow extends JDialog {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 // Only toggle the Window when it is enabled
-                //if(enableWindow){
-                    setVisible(!isVisible());
-                //}
+                pack();
+                setVisible(!isVisible());
             }
         });
     }
