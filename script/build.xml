@@ -98,10 +98,10 @@ Project information to be disclosed soon.
         </copy>
         <!-- Properties that the user might modify -->
         <copy todir="../exec/config">
-            <fileset dir="config" includes="**.config.xml"/>
+            <fileset dir="../config" includes="**.config.xml"/>
         </copy>
         <copy todir="../exec">
-            <fileset dir="${script}/software.properties"/>
+            <fileset dir="${script}" includes="software.properties"/>
         </copy>
     </target>
 
