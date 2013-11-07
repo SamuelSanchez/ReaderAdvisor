@@ -1,16 +1,10 @@
 package readerAdvisor.file.xml;
 
-/**
- * Created with IntelliJ IDEA.
- * User: Eduardo
- * Date: 11/4/13
- * Time: 11:58 PM
- * To change this template use File | Settings | File Templates.
- */
-public class PropertyElement<E> {
+@SuppressWarnings("unused")
+public class PropertyElement {
     private String parent;
     private String name;
-    private E value;
+    private String value;
 
     public PropertyElement(){ }
 
@@ -18,7 +12,7 @@ public class PropertyElement<E> {
         this.parent = parent;
     }
 
-    public PropertyElement(String name, E value){
+    public PropertyElement(String name, String value){
         this.name = name;
         this.value = value;
     }
@@ -26,11 +20,11 @@ public class PropertyElement<E> {
     // Setters
     public void setParent(String parent){ this.parent = parent; }
     public void setName(String name){ this.name = name; }
-    public void setValue(E value){ this.value = value; }
+    public void setValue(String value){ this.value = value; }
     // Getters
     public String getParent(){ return parent; }
     public String getName(){ return name; }
-    public E getValue(){ return value; }
+    public String getValue(){ return value; }
 
     @Override
     public boolean equals(Object o) {
@@ -44,6 +38,10 @@ public class PropertyElement<E> {
         if (value != null ? !value.equals(that.value) : that.value != null) return false;
 
         return true;
+    }
+
+    public String toString(){
+        return name;
     }
 
     @Override

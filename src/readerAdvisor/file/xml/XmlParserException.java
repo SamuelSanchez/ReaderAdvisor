@@ -1,12 +1,6 @@
 package readerAdvisor.file.xml;
 
-/**
- * Created with IntelliJ IDEA.
- * User: Eduardo
- * Date: 11/5/13
- * Time: 12:20 AM
- * To change this template use File | Settings | File Templates.
- */
+@SuppressWarnings("unused")
 public class XmlParserException extends Exception {
 
     public XmlParserException(){

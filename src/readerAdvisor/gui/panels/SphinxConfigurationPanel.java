@@ -3,6 +3,8 @@ package readerAdvisor.gui.panels;
 import readerAdvisor.environment.GlobalProperties;
 import readerAdvisor.file.FileUtils;
 import readerAdvisor.file.xml.PropertyElement;
+import readerAdvisor.file.xml.XmlParser;
+import readerAdvisor.file.xml.XmlParserException;
 import readerAdvisor.speech.SpeechManager;
 
 import javax.swing.*;
@@ -11,8 +13,6 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.Vector;
@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class SphinxConfigurationPanel {
     // Gui Window where this panel belongs
+    @SuppressWarnings("unused")
     private JDialog frame = null;
     // Current sphinx configuration
     private String currentSphinxConfiguration = null;
@@ -27,6 +28,12 @@ public class SphinxConfigurationPanel {
     private String sphinxConfigurationPath = null;
     // Sphinx Configuration Combo Box
     private JComboBox<String> sphinxConfigurations = new JComboBox<String>();
+    // Create the property value drop down
+    private JComboBox<PropertyElement> propertyValueDropDown = new JComboBox<PropertyElement>();
+    // Create the JInputText that will display the value of the element
+    private JTextField valueField = new JTextField(10);
+    // Current Sphinx Configuration File
+    private XmlParser currentSphinxConfigurationFile = null;
     // Delay time in Milliseconds
     private AtomicInteger delayTimeInMilliSeconds = new AtomicInteger(GlobalProperties.getInstance().getPropertyAsInteger("sphinxConfigurationPanel.delayTimeInMilliSeconds",500));
 
@@ -87,12 +94,31 @@ public class SphinxConfigurationPanel {
                         SphinxPropertiesWindow.SphinxConfigurationSuffix);
                 // Update the Sphinx Manager Configuration File
                 SpeechManager.getInstance().setSpeechConfiguration(currentSphinxConfiguration);
+                // Populate the Sphinx configuration drop down
+                updateCurrentSphinxConfigurationValue();
             }
         });
+        // Populate the Sphinx configuration drop down
+        updateCurrentSphinxConfigurationValue();
         // Add the Sphinx Configuration drop down to the panel
         panel.add(sphinxConfigurations);
         // Return the panel to the user
         return panel;
+    }
+
+    /*
+     * Update the value of the current selected property
+     */
+    private void updateCurrentSphinxConfigurationValue(){
+        // Keep the current xml file
+        try{
+            currentSphinxConfigurationFile = new XmlParser(currentSphinxConfiguration);
+            propertyValueDropDown.setModel(new DefaultComboBoxModel<PropertyElement>(currentSphinxConfigurationFile.getListOfIntegerElements()));
+            // Update the value of the text field
+            valueField.setText(((PropertyElement)propertyValueDropDown.getSelectedItem()).getValue());
+        }catch (XmlParserException exc){
+            exc.printStackTrace();
+        }
     }
 
     /*
@@ -185,18 +211,36 @@ public class SphinxConfigurationPanel {
     /*
      * Create the Sphinx Value panel that will modify the data dynamically using a drop down
      */
-    // TODO: Add the XML file - Get the xml from the sphinx drop down then pass it to this function
     private JPanel getSphinxValuesPanel(){
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        // Create the property value drop down
-        JComboBox<PropertyElement<String>> propertyValueDropDown = new JComboBox<PropertyElement<String>>();
         panel.add(propertyValueDropDown);
-        // Create the JInputText that will display the value of the element
-        JTextField valueField = new JTextField(4);
         panel.add(valueField);
         // Create the Update button
-        JButton uploadButton = new JButton("Update");
-        panel.add(uploadButton);
+        JButton updateButton = new JButton("Update");
+        panel.add(updateButton);
+        // Update the value of the text field when the drop down is selected
+        propertyValueDropDown.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Get the selected value of this drop down to this text field
+                PropertyElement propertyElement = (PropertyElement) propertyValueDropDown.getSelectedItem();
+                valueField.setText(propertyElement.getValue());
+            }
+        });
+        // Update button will rewrite the xml file
+        updateButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try{
+                    // Update the current value into the xml document
+                    currentSphinxConfigurationFile.updateListElement((PropertyElement)propertyValueDropDown.getSelectedItem(),valueField.getText());
+                    // Update the xml document - rewrite it
+                    currentSphinxConfigurationFile.saveXML();
+                }catch (XmlParserException exc){
+                    exc.printStackTrace();
+                }
+            }
+        });
         // Return the panel
         return panel;
     }
