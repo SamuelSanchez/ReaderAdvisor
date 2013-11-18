@@ -12,11 +12,6 @@ public class PropertyElement {
         this.parent = parent;
     }
 
-    public PropertyElement(String name, String value){
-        this.name = name;
-        this.value = value;
-    }
-
     // Setters
     public void setParent(String parent){ this.parent = parent; }
     public void setName(String name){ this.name = name; }
@@ -35,7 +30,6 @@ public class PropertyElement {
 
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (parent != null ? !parent.equals(that.parent) : that.parent != null) return false;
-        if (value != null ? !value.equals(that.value) : that.value != null) return false;
 
         return true;
     }
@@ -48,7 +42,6 @@ public class PropertyElement {
     public int hashCode() {
         int result = parent != null ? parent.hashCode() : 0;
         result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (value != null ? value.hashCode() : 0);
         return result;
     }
 }

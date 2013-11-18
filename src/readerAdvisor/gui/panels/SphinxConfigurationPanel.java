@@ -142,15 +142,14 @@ public class SphinxConfigurationPanel {
                         currentSphinxConfiguration = sphinxPropertiesWindow.getSphinxPropertyFileName();
                         // Update the Sphinx Manager Configuration File
                         SpeechManager.getInstance().setSpeechConfiguration(currentSphinxConfiguration);
-                        populateSphinxConfigurationsDropDown(currentSphinxConfiguration);
-                        // Enable the button if there's more than one items
-                        if (sphinxConfigurations.getItemCount() > 1) {
-                            deleteButton.setEnabled(true);
-                        }
-                        // Disable the button if there's only one item
-                        else {
-                            deleteButton.setEnabled(false);
-                        }
+                    }
+                    // Update the drop down values
+                    populateSphinxConfigurationsDropDown(currentSphinxConfiguration);
+                    // Enable the button if there's more than one items
+                    if (sphinxConfigurations.getItemCount() > 1) {
+                        deleteButton.setEnabled(true);
+                    }else {// Disable the button if there's only one item
+                        deleteButton.setEnabled(false);
                     }
                 } catch (IOException ioe) {
                     ioe.printStackTrace();

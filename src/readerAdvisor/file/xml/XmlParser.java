@@ -19,8 +19,6 @@ import java.util.Vector;
 public class XmlParser {
     // Document that stores the XML file
     private Document document = null;
-    // Document Builder
-    private DocumentBuilder dBuilder = null;
     // Name of the file document
     private String fileName = null;
     // List of elements that are in the document
@@ -40,8 +38,8 @@ public class XmlParser {
         // Retrieve the document
         try{
             // Store the name of the document
-            this.fileName = file.getName();
-            this.dBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            this.fileName = file.getPath();
+            DocumentBuilder dBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
             this.document = dBuilder.parse(file);
             // Parse the XML File
             retrieveXMLFILE();
@@ -135,8 +133,9 @@ public class XmlParser {
     public void saveXML(String _fileName) throws XmlParserException{
         if(_fileName != null){
             try{
-                // Update the current values
-                updateCurrentValues();
+                // Update the current xml values
+                updateCurrentValues(document.getChildNodes());
+                // Store the xml file
                 TransformerFactory transformerFactory = TransformerFactory.newInstance();
                 Transformer transformer = transformerFactory.newTransformer();
                 DOMSource source = new DOMSource(document);
@@ -171,11 +170,33 @@ public class XmlParser {
     /*
      * Updates the current values of this configuration file
      */
-    private void updateCurrentValues(){
+    private void updateCurrentValues(NodeList nodeList){
         // Iterate through the list of values to update the xml document
-        for(PropertyElement element : listOfElements){
-            // TODO: search from the document for this element name and update the document's value
-            System.out.println("Name : " + element.getName() + "\t-\t" + element.getValue());
+        for (int i = 0; i < nodeList.getLength(); i++) {
+            Node currentNode = nodeList.item(i);
+            if (currentNode.getNodeType() == Node.ELEMENT_NODE) {
+                // Create the property element
+                PropertyElement propertyElement = new PropertyElement();
+                // Store the node name as the parent element
+                propertyElement.setParent(currentNode.getNodeName());
+                if (currentNode.hasAttributes()) {
+                    // get attributes names and values
+                    NamedNodeMap nodeMap = currentNode.getAttributes();
+                    propertyElement.setName(nodeMap.getNamedItem("name").getNodeValue());
+                    // If the element exists in the list of element then update the node value
+                    int index = listOfElements.indexOf(propertyElement);
+                    if(index > -1){
+                        // Update the value if it's not null
+                        if(nodeMap.getNamedItem("value") != null){
+                            nodeMap.getNamedItem("value").setNodeValue(listOfElements.get(index).getValue());
+                        }
+                    }
+                }
+                // Update all child nodes
+                if(currentNode.hasChildNodes()){
+                    updateCurrentValues(currentNode.getChildNodes());
+                }
+            }
         }
     }
 }
