@@ -4,6 +4,7 @@ import edu.cmu.sphinx.decoder.ResultListener;
 import edu.cmu.sphinx.frontend.FrontEnd;
 import edu.cmu.sphinx.frontend.util.Microphone;
 import edu.cmu.sphinx.frontend.util.StreamDataSource;
+import edu.cmu.sphinx.frontend.util.Utterance;
 import edu.cmu.sphinx.instrumentation.AccuracyTracker;
 import edu.cmu.sphinx.instrumentation.SpeedTracker;
 import edu.cmu.sphinx.recognizer.Recognizer;
@@ -26,6 +27,7 @@ import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Vector;
 
 public class LiveRecognizer {
     // General Properties
@@ -56,6 +58,7 @@ public class LiveRecognizer {
 
     // New version objects
     private Paragraph paragraph;
+    private Vector<Utterance> utteranceList = new Vector<Utterance>();
 
     public LiveRecognizer(String name, String configName, String textToRecognize){
         this.name = name;
@@ -307,6 +310,17 @@ public class LiveRecognizer {
     }
 
     /*
+     * Return the current utterance
+     */
+    public Utterance getCurrentUtterance(){
+        Utterance currentUtterance = null;
+        if(allocated && microphone != null){
+            currentUtterance = microphone.getUtterance();
+        }
+        return currentUtterance;
+    }
+
+    /*
      * Store the audio file that was captured by the microphone
      * Provide the file name. The default type is WAVE.
      */
@@ -384,9 +398,11 @@ public class LiveRecognizer {
     }
 
     /*
+     * Deprecated - replaced by 'AudioUtils.saveAudio'
      * Store the audio file that was captured by the microphone
      * Provide the file name and the audio type (ex. wav, aifc, aiff, au, snd)
      */
+    @Deprecated
     public void saveAudioFile(String fileName, AudioFileFormat.Type type) throws IOException{
         // If the microphone has not been allocated - then we cannot store it
         if(allocated && microphone != null){
@@ -398,12 +414,70 @@ public class LiveRecognizer {
     }
 
     /*
+     * Store the current utterance in a vector - To store a complete audio file when recording is completed successful
+     */
+    public void storeUtteranceToList(){
+        if(microphone != null && microphone.getUtterance() != null){
+            utteranceList.add(microphone.getUtterance());
+        }
+    }
+
+    /*
+     * Clear th current utterance vector
+     */
+    public void clearUtteranceList(){
+        utteranceList.clear();
+    }
+
+    /*
+     * Return the utterance list
+     */
+    public Vector<Utterance> getUtteranceList(){
+        return utteranceList;
+    }
+
+    /*
+     * Deprecated by getCompleteAudioStream
      * Return the AudioInputStream from the microphone
      */
+    @Deprecated
     public AudioInputStream getAudioStream(){
         AudioInputStream microphoneAudio = null;
         if(allocated && microphone != null){
             byte[] audio = microphone.getUtterance().getAudio();
+            microphoneAudio = new AudioInputStream(new ByteArrayInputStream(audio), microphone.getAudioFormat(), audio.length);
+        }
+        return microphoneAudio;
+    }
+
+    /*
+     * Return the complete AudioInputStream from the microphone
+     */
+    // TODO: Find out why this data is not being passed propertly to the microphone in order to be played
+    public AudioInputStream getCompleteAudioStream(){
+        AudioInputStream microphoneAudio = null;
+        if(allocated && microphone != null){
+            System.out.println("Utterance List size : " + utteranceList.size());
+            byte[] audio = {};
+            // Iterate through all utterance vector
+            for(Utterance utterance : utteranceList){
+                // Increase the audio length
+                byte[] temp = new byte[audio.length + utterance.getAudio().length];
+                // Copy the array element
+                System.arraycopy(audio, 0, temp, 0, audio.length);
+                System.arraycopy(utterance.getAudio(), 0, temp, audio.length, utterance.getAudio().length);
+                // Copy the temporary file into the new file
+                audio = temp;
+            }
+            // Add the last utterance that is currently held in the microphone
+            Utterance currentUtterance = microphone.getUtterance();
+            byte[] temp = new byte[audio.length + currentUtterance.getAudio().length];
+            // Copy the array element
+            System.arraycopy(audio, 0, temp, 0, audio.length);
+            System.arraycopy(currentUtterance.getAudio(), 0, temp, audio.length, currentUtterance.getAudio().length);
+            // Copy the temporary file into the new file
+            audio = temp;
+            // Create the microphoneAudio data
             microphoneAudio = new AudioInputStream(new ByteArrayInputStream(audio), microphone.getAudioFormat(), audio.length);
         }
         return microphoneAudio;

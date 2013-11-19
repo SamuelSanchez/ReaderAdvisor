@@ -36,16 +36,9 @@ public class MenuBar {
                         // Make sure that there's a Sphinx Configuration file
                         if(SpeechManager.getInstance().getSpeechConfiguration() == null){
                             // Retrieve the configuration from the software.properties file.
-                            // If there's no speechConfiguration defined then used the default value.
-                            SpeechManager.getInstance().setSpeechConfiguration(GlobalProperties.getInstance().getProperty("speechManager.speechConfiguration", "readerAdvisor.config.xml"));
+                            SpeechManager.getInstance().setSpeechConfiguration(GlobalProperties.getInstance().getProperty("speechManager.speechConfiguration"));
                         }
-                        // Select the configuration file that the user selected from the ConfigurationWindow.SphinxConfiguration.SphinxProperties drop-down
-                        // Only commit this file if it exits. If there's an error, then do not commit the file and used the default value
-                        try{
-                            // TODO: Implement this function where we are retrieving Sphinx Configuration file from the drop-down menu
-                        }catch(Exception ex){
-                            // Do nothing
-                        }
+                        // The current Sphinx configuration is selected by the Sphinx Configuration Panel 'configuration' drop down
                         // Allocate Sphinx4 for recognition
                         SpeechManager.getInstance().configureRecognizer();
                         // Reset the values of the property file
@@ -77,7 +70,7 @@ public class MenuBar {
                         //Pass the name of the files being read and the microphone data to the audio player gui
                         String recognizerName = SpeechManager.getInstance().getLiveRecognizerName();
                         audioPlayerWindow.setFullNameOfAudioToPlay(recognizerName != null ? recognizerName : "[No recorded audio to be played]");
-                        audioPlayerWindow.setMicrophoneData(SpeechManager.getInstance().getMicrophoneAudioStream());
+                        audioPlayerWindow.setMicrophoneData(SpeechManager.getInstance().getCompleteMicrophoneAudioStream());
                         // ---------- Will display visual audio data ---------- //
                         // Pass Sphinx properties to the AudioPlayer - will help retrieving audio information to draw the Audio and Spectrogram panel
                         audioPlayerWindow.setPropertySheet(SpeechManager.getInstance().getPropertySheet());

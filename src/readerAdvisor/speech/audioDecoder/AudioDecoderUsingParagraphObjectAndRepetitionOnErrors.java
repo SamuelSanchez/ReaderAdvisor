@@ -22,6 +22,7 @@ public class AudioDecoderUsingParagraphObjectAndRepetitionOnErrors extends Decod
         // Retrieve the time to wait in MilliSeconds
         int delayTimeInMilliSeconds = ConfigurationWindow.getInstance().getDelayTimeInMilliSeconds();
         try{
+            // TODO: Put the below functions into a entry function at the parent class - just call that class
             // This flag cannot be read in the toggle method since it will prevent the window to open at all times, not only when reading
             // Disable the window to be opened once the recognizer is running - driven by the configuration
             boolean allowUserToInteractWithConfigurationWindow = (!GlobalProperties.getInstance().getPropertyAsBoolean("configurationWindow.disableWindowOnReading"));
@@ -30,7 +31,6 @@ public class AudioDecoderUsingParagraphObjectAndRepetitionOnErrors extends Decod
             while (microphone.hasMoreData()) {
                 // Sleep some time so that it won't appear to be flipping through so quickly
                 millisecondsToDelay(delayTimeInMilliSeconds);
-                System.out.println("Delay : " + delayTimeInMilliSeconds);
 
                 // Check if the user has repeated reading 'X' amount of times as set in the Configuration Window
                 // If so, then do not ask the user to read again
@@ -47,15 +47,18 @@ public class AudioDecoderUsingParagraphObjectAndRepetitionOnErrors extends Decod
                     if(!liveRecognizer.hasMoreReferences()){
                         // THIS WILL PASS THE LIVE RECOGNIZER TO THE SPEECH MANAGER AND WILL CALL THE NEW METHOD TO STOP IT
                         RecognizerActionToolbar.getInstance().setEndState();
+                        // Store the audio file
+                        SpeechManager.getInstance().saveAudioFile();
                         break;
                     }
                     // Get the next reference
                     continue;
                 }
+                // Remove the Highlight the line to be recognized
+                removePreviousTextToRecognize();
                 // If the text is to be repeated to read then keep in the same line for 'X' amount of times,
                 // otherwise continue reading the next line
                 highlightTextToRecognize(nextReference.getTrimmedWord(), nextReference.getInit(), nextReference.getEnd());
-                //TextWindow.getInstance().refresh();
 
                 // Display the next word in the Debugger Window
                 DebuggerWindow.getInstance().addTextLineToPanel("+[" + nextReference.getTrimmedWord() + "]+");
@@ -67,10 +70,6 @@ public class AudioDecoderUsingParagraphObjectAndRepetitionOnErrors extends Decod
                 String hypothesis = (liveRecognizer.getHypothesis() != null ? liveRecognizer.getHypothesis().trim() : "");
                 RecognizerWindow.getInstance().addTextToPanel(hypothesis + EnvironmentUtils.NEW_LINE);
 
-                // Highlight the line to be recognized
-                removePreviousTextToRecognize();
-                //TextWindow.getInstance().refresh();
-
                 // The Program has stopped recognizing but the Thread is still running - check the state of the toolBar
                 if(!RecognizerActionToolbar.getInstance().isEndState()){
                     if(!hypothesis.isEmpty()){
@@ -78,7 +77,6 @@ public class AudioDecoderUsingParagraphObjectAndRepetitionOnErrors extends Decod
                         // Iterate thought the loop of recognized words - might not be 100% accurate
                         for(String word : hypothesis.split(EnvironmentUtils.SPACE)){
                             recognizedPosition = highlightTextRecognized(word, recognizedPosition, nextReference.getEnd());
-                            //TextWindow.getInstance().refresh();
                         }
                     }
                 }// if
@@ -90,7 +88,6 @@ public class AudioDecoderUsingParagraphObjectAndRepetitionOnErrors extends Decod
                     if(ConfigurationWindow.getInstance().checkRepetitionValidationAndDecreaseCounter()){
                         // Deselect the recognized words on this line
                         removeHighlightedRecognizedText(nextReference.getInit(), nextReference.getEnd());
-                        //TextWindow.getInstance().refresh();
                         //Clear the microphone data
                         microphone.clear();
                     }
@@ -105,9 +102,5 @@ public class AudioDecoderUsingParagraphObjectAndRepetitionOnErrors extends Decod
         SpeechManager.getInstance().stopRecording();
         // Remove the last highlight line - the line that was highlighted
         removePreviousTextToRecognize();
-        //TextWindow.getInstance().refresh();
-        // TODO: Should the audio be stored only when the reading completed successfully? How about pausing and resetting?
-        // Store the audio file
-        saveAudioFile();
     }
 }

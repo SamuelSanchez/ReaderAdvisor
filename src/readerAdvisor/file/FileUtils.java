@@ -8,13 +8,7 @@ import javax.swing.text.Highlighter;
 import java.awt.*;
 import java.io.*;
 
-/**
- * Created with IntelliJ IDEA.
- * User: Eduardo
- * Date: 5/4/13
- * Time: 9:39 PM
- * To change this template use File | Settings | File Templates.
- */
+@SuppressWarnings("unused")
 public class FileUtils {
     // Color Highlighters used while reading
     public static final MyHighlighter TO_RECOGNIZE_HIGHLIGHTER = new MyHighlighter(Color.YELLOW);
@@ -228,6 +222,20 @@ public class FileUtils {
         }
 
         return text;
+    }
+
+    /*
+    * Return the name with no path and suffixes
+    */
+    public static synchronized String getTextWithoutPathAndSuffix(String name, String suffix){
+        String tempName = null;
+        if(name != null && !name.isEmpty()){
+            tempName = FileUtils.getTextWithoutPath(name);
+            if(suffix != null && !suffix.isEmpty() && tempName.endsWith(suffix)){
+                tempName = tempName.substring(0, tempName.indexOf(suffix));
+            }
+        }
+        return tempName;
     }
 
     public static synchronized String getPathFromText(String text){

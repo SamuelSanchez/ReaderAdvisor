@@ -9,6 +9,7 @@ import readerAdvisor.file.HighlightItem;
 import readerAdvisor.gui.DebuggerWindow;
 import readerAdvisor.gui.RecognizerActionToolbar;
 import readerAdvisor.gui.TextWindow;
+import readerAdvisor.speech.util.AudioUtils;
 import readerAdvisor.speech.util.GrammarUtils;
 
 import javax.sound.sampled.AudioInputStream;
@@ -38,10 +39,17 @@ public class SpeechManager {
 
     private SpeechManager(){
          // Set up class variables - Provide default values if this properties are not defined in software.properties file
-        speechConfiguration = GlobalProperties.getInstance().getProperty("speechManager.speechConfiguration", "readerAdvisor.config.xml");
-        GRAMMAR = GlobalProperties.getInstance().getProperty("speechManager.GRAMMAR", "readerAdvisor");
-        GRAMMAR_FILE = GRAMMAR + ".gram";
+        speechConfiguration = GlobalProperties.getInstance().getProperty("speechManager.speechConfiguration");
+        updateGrammarName();
         DIRECTORY = GlobalProperties.getInstance().getProperty("speechManager.grammarDirectory", "temp");
+    }
+
+    private void updateGrammarName(){
+        GRAMMAR = FileUtils.getTextWithoutPath(speechConfiguration);
+        if(GRAMMAR.contains(".")){
+            GRAMMAR = GRAMMAR.substring(0, GRAMMAR.indexOf("."));
+        }
+        GRAMMAR_FILE = GRAMMAR + ".gram";
     }
 
     public static SpeechManager getInstance(){
@@ -93,7 +101,8 @@ public class SpeechManager {
                 String text  = FileUtils.getTextAndDigits(TextWindow.getInstance().getText());
 
                 LiveRecognizer recognizer = new LiveRecognizer(title, speechConfiguration,text);
-
+                // Update the grammar name
+                updateGrammarName();
                 // Only allocate the recognizer if the Grammar was built successfully
                 if(GrammarUtils.createGrammar(text)){
                     if (recognizer.allocate()) {
@@ -140,6 +149,9 @@ public class SpeechManager {
             DebuggerWindow.getInstance().addTextLineToPanel("LiveRecognizer is null");
             return;
         }
+        // Add this utterance into the Utterance list
+        liveRecognizer.storeUtteranceToList();
+        // Stop the microphone
         liveRecognizer.stopRecording();
     }
 
@@ -153,6 +165,9 @@ public class SpeechManager {
      */
     public synchronized void stopRecording(){
         if(liveRecognizer != null){
+            // Clear the Utterance list
+            liveRecognizer.clearUtteranceList();
+            // Stop the microphone
             liveRecognizer.stopRecording();
         }
     }
@@ -172,10 +187,22 @@ public class SpeechManager {
     /*
      * Return the microphone audio stream
      */
+    @Deprecated
     public synchronized AudioInputStream getMicrophoneAudioStream(){
         AudioInputStream microphoneStream = null;
         if(liveRecognizer != null){
             microphoneStream = liveRecognizer.getAudioStream();
+        }
+        return microphoneStream;
+    }
+
+    /*
+    * Return the complete microphone audio stream
+    */
+    public synchronized AudioInputStream getCompleteMicrophoneAudioStream(){
+        AudioInputStream microphoneStream = null;
+        if(liveRecognizer != null){
+            microphoneStream = liveRecognizer.getCompleteAudioStream();
         }
         return microphoneStream;
     }
@@ -249,5 +276,12 @@ public class SpeechManager {
         if(disablePlayStopToolbar){
             RecognizerActionToolbar.getInstance().setReadyState();
         }
+    }
+
+    /*
+     * Save the Audio File
+     */
+    public void saveAudioFile(){
+        AudioUtils.saveAudioFile(liveRecognizer);
     }
 }
