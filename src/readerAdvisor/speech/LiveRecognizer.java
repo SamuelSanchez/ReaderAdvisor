@@ -325,6 +325,7 @@ public class LiveRecognizer {
      * Provide the file name. The default type is WAVE.
      */
     @SuppressWarnings("unused")
+    @Deprecated
     public void saveAudioFileAsWave(String fileName) throws IOException{
         saveAudioFile(fileName, AudioFileFormat.Type.WAVE);
     }
@@ -334,6 +335,7 @@ public class LiveRecognizer {
     * Provide the file name. The default type is AIFC.
     */
     @SuppressWarnings("unused")
+    @Deprecated
     public void saveAudioFileAsAifc(String fileName) throws IOException{
         saveAudioFile(fileName, AudioFileFormat.Type.AIFC);
     }
@@ -343,6 +345,7 @@ public class LiveRecognizer {
     * Provide the file name. The default type is AIFF.
     */
     @SuppressWarnings("unused")
+    @Deprecated
     public void saveAudioFileAsAiff(String fileName) throws IOException{
         saveAudioFile(fileName, AudioFileFormat.Type.AIFF);
     }
@@ -352,6 +355,7 @@ public class LiveRecognizer {
     * Provide the file name. The default type is AU.
     */
     @SuppressWarnings("unused")
+    @Deprecated
     public void saveAudioFileAsAu(String fileName) throws IOException{
         saveAudioFile(fileName, AudioFileFormat.Type.AU);
     }
@@ -361,6 +365,7 @@ public class LiveRecognizer {
     * Provide the file name. The default type is SND.
     */
     @SuppressWarnings("unused")
+    @Deprecated
     public void saveAudioFileAsSnd(String fileName) throws IOException{
         saveAudioFile(fileName, AudioFileFormat.Type.SND);
     }
@@ -370,6 +375,7 @@ public class LiveRecognizer {
     * Provide the file name and the audio type as String (ex. wav, aifc, aiff, au, snd)
     */
     @SuppressWarnings("unused")
+    @Deprecated
     public void saveAudioFile(String fileName, String type) throws IOException{
         // Store the file
         saveAudioFile(fileName, getTypeFromString(type));
