@@ -26,7 +26,6 @@ public class SaveAudioFilePanel {
 
     public SaveAudioFilePanel(JDialog frame) throws EnvironmentException{
         this.frame = frame;
-        // TODO: For now use this directory for testing purposes - Ideally get the full path of the executing directory and create the audio directory there
         // Create the directory where the audio will be stored - if it does not exits
         String audioDirectoryName = GlobalProperties.getInstance().getProperty("saveAudioFilePanel.audioDirectory", "audioFiles");
         boolean isAudioToBeRecordedByDefault = GlobalProperties.getInstance().getPropertyAsBoolean("saveAudioFilePanel.recordAudio");

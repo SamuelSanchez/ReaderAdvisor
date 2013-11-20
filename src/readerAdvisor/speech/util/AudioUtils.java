@@ -1,6 +1,5 @@
 package readerAdvisor.speech.util;
 
-import com.sun.deploy.util.ArrayUtil;
 import edu.cmu.sphinx.frontend.util.Utterance;
 import readerAdvisor.environment.EnvironmentUtils;
 import readerAdvisor.gui.ConfigurationWindow;
@@ -15,7 +14,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Vector;
 
@@ -82,7 +80,7 @@ public class AudioUtils {
             System.arraycopy(currentUtterance.getAudio(), 0, temp, audio.length, currentUtterance.getAudio().length);
             // Copy the temporary file into the new file
             audio = temp;
-
+            // Store the audio file
             AudioInputStream ais = new AudioInputStream
                     ((new ByteArrayInputStream(audio)), audioFormat, audio.length);
             AudioSystem.write(ais, fileFormat, file);

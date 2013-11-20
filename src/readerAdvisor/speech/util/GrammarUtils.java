@@ -11,15 +11,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 
-/**
- * Created with IntelliJ IDEA.
- * User: Eduardo
- * Date: 7/8/13
- * Time: 1:19 AM
- * To change this template use File | Settings | File Templates.
- */
 public class GrammarUtils {
-    // TODO: Upgrade the way to create and delete the Grammar directory
     private static HashMap<String,Double> wordsProbabilityDictionary = new HashMap<String,Double>();
 
     public static void setWordsProbabilityDictionary(HashMap<String,Double> wpd){
@@ -117,7 +109,6 @@ public class GrammarUtils {
                 String[] words = line.split(EnvironmentUtils.SPACE);
                 StringBuilder weightedSentence = new StringBuilder();
                 String temp = "";
-                //TODO : DO NOT USE WEIGHT BUT OPTION FOR WORDS LESS THAN 3 SENTENCES
                 for(String word : words){
                     weight = (wordsProbabilityDictionary != null && wordsProbabilityDictionary.get(word) != null) ?
                             wordsProbabilityDictionary.get(word) :
@@ -129,7 +120,7 @@ public class GrammarUtils {
                 // Take away the last vertical bar and space from the weighted sentence
                 if(weightedSentence.length() > 2)
                     temp = (weightedSentence.substring(0, weightedSentence.length()-2)); // take the last
-                // TODO: FIX THE GRAMMAR - DO NOT USE CLEAN STAR
+                // Create the grammar
                 grammar += "public <line_" + (++counter) + "> = ( " + temp + ")" + (useCleanStar? "*" : "") + " ;" + EnvironmentUtils.NEW_LINE + EnvironmentUtils.NEW_LINE;
             }
         }

@@ -144,6 +144,9 @@ public class SpeechManager {
         }
     }
 
+    /*
+     * Pause the recognition - Store the audio held in the microphone and stop the microphone recognition
+     */
     public synchronized void pauseRecognizing(){
         if(liveRecognizer == null){
             DebuggerWindow.getInstance().addTextLineToPanel("LiveRecognizer is null");
@@ -162,11 +165,10 @@ public class SpeechManager {
 
     /*
      * Stop recording data from the microphone - set flag to 'Stop Recording' in sphinx
+     * Do not clear the utterance list - Utterance list is cleared at 'resetUserRecognition'
      */
     public synchronized void stopRecording(){
         if(liveRecognizer != null){
-            // Clear the Utterance list
-            liveRecognizer.clearUtteranceList();
             // Stop the microphone
             liveRecognizer.stopRecording();
         }
@@ -264,10 +266,21 @@ public class SpeechManager {
         resetUserRecognition(recognizer,false);
     }
 
+    /*
+     * Clear all the recognition process and reset all values used
+     * Reset:
+     *      - utterance list : List that stores the utterance kept in the microphone
+     *      - recognizer     : Stop the microphone recognition
+      *     - references     : List of text that the user will read. Each element is a line that the user have to recognize
+      *     - highlight      : remove all highlights
+      *     - recognizer toolbar : set to ready state the toolbar
+     */
     public static synchronized void resetUserRecognition(LiveRecognizer recognizer, boolean disablePlayStopToolbar){
         if(recognizer == null){
             return;
         }
+        // Clear the Utterance list
+        liveRecognizer.clearUtteranceList();
         // Stop recognizing and reset reference
         recognizer.stopRecording();
         recognizer.resetReference();

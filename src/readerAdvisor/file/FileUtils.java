@@ -48,7 +48,6 @@ public class FileUtils {
         return FileUtils.replaceDigitsForText(FileUtils.getTextAndDigits(text));
     }
 
-    // TODO: Strings should come from a configuration file and not be hardcoded here
     public static synchronized String replaceDigitsForText(String text){
         return (text.replaceAll("1", " one").replaceAll("2", " two").replaceAll("3", " three").replaceAll("4", " four").
                 replaceAll("5", " five").replaceAll("6", " six").replaceAll("7", " seven").replaceAll("8", " eight").
@@ -285,11 +284,8 @@ public class FileUtils {
             // Check if these two objects are the same - reside in the same memory space
             if(highlight.getPainter() == myHighlighter){
                 try{
-                textPane.getHighlighter().addHighlight(startPosition, endPosition, null);
-//                textPane.getHighlighter().removeHighlight(highlight);
+                    textPane.getHighlighter().addHighlight(startPosition, endPosition, null);
                 }catch(Exception e){
-                    // TODO: Delete this
-                    System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
                     e.printStackTrace();
                 }
             }

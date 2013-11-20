@@ -459,11 +459,9 @@ public class LiveRecognizer {
     /*
      * Return the complete AudioInputStream from the microphone
      */
-    // TODO: Find out why this data is not being passed propertly to the microphone in order to be played
     public AudioInputStream getCompleteAudioStream(){
         AudioInputStream microphoneAudio = null;
         if(allocated && microphone != null){
-            System.out.println("Utterance List size : " + utteranceList.size());
             byte[] audio = {};
             // Iterate through all utterance vector
             for(Utterance utterance : utteranceList){

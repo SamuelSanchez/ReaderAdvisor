@@ -56,7 +56,6 @@ public class AudioPlayerWindow extends JDialog implements ActionListener {
 	private ImageIcon iconStop = MenuBarUtils.createIcon("stop_audio.png");
 	private ImageIcon iconPause = MenuBarUtils.createIcon("pause_audio.png");
 
-    // TODO: Should we make this class a singleton as well? Take a look at the GC output
     @SuppressWarnings("unused")
 	public AudioPlayerWindow() {
 		setUpWindow(null);
