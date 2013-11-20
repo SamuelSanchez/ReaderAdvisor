@@ -6,15 +6,7 @@ import readerAdvisor.speech.SpeechManager;
 import javax.swing.*;
 import java.io.*;
 
-/**
- * Created with IntelliJ IDEA.
- * User: Eduardo
- * Date: 5/4/13
- * Time: 9:17 PM
- * To change this template use File | Settings | File Templates.
- */
 public class EnvironmentUtils {
-    // TODO: Pass this hardcoded directory to GlobalProperties class
     // Public Global Variables
     public static final String SEPARATOR = System.getProperty("file.separator");
     public static final String NEW_LINE = System.getProperty("line.separator");
