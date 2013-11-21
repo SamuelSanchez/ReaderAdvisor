@@ -58,7 +58,6 @@ Project information to be disclosed soon.
     <!-- * Cleans all the code.                                   * -->
     <!-- *                                                        * -->
     <!-- ********************************************************** -->
-    <!-- TODO: Need to delete everything in here except the 'build.xml' file -->
     <target name="clean" description="Cleans all the compiled and Jar files.">
         <!--delete file="../exec/readerAdvisor.config.xml" /-->
         <!--delete file="../exec/software.properties" /-->
