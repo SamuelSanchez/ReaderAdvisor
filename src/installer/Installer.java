@@ -1,5 +1,6 @@
 package installer;
 
+import installer.utils.InstallationStatus;
 import installer.utils.InstallerUtils;
 
 import javax.swing.*;
@@ -25,6 +26,9 @@ public class Installer extends JFrame {
     private Vector<File> filesCreated = new Vector<File>();
     // Boolean that states whether the installation has completed or not
     private AtomicBoolean isInstallationCompleted = new AtomicBoolean(false);
+    // Panel where all the installation process is displayed and action panel
+    private JPanel userActionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+    private JPanel backNextCancelPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
     // Action Buttons
     private JButton backButton = new JButton("Back");
     private JButton nextButton = new JButton("Next");
@@ -34,21 +38,149 @@ public class Installer extends JFrame {
     // Gui variables
     private static final int GUI_WIDTH = 500;
     private static final int GUI_HEIGHT = 350;
-    private static final int DELAY_MS = 3000;  // Delay before the next image loads
+    private static final int DELAY_MS = 2500;  // Delay before the next image loads
+    // Current Installation State of the software
+    private InstallationStatus currentState = InstallationStatus.INTRODUCTION;
 
     // Run the Installer
     public static void run(){
-        new Installer().execute();
+        new Installer().displayIntroductionMessage();
     }
 
     /*
-    * Create and Install all the files used for Reader Advisor application
+    * Execute the next installation of the software
     */
-    public void execute(){
-        // TODO : FILL THIS IN
-        System.out.println("Installing - add progress bar");
-        // Once everything is completed set the installation boolean to true
-        //isInstallationCompleted.set(true);
+    public void executeNextState(){
+        // Execute the current window state
+        switch (currentState){
+            // Display the information about the software
+            case INTRODUCTION:
+                currentState = InstallationStatus.SELECT_DIRECTORY;
+                selectDirectory();
+                break;
+            // Select the directory where the software is going to be installed
+            case SELECT_DIRECTORY:
+                currentState = InstallationStatus.INSTALLING;
+                installingSoftware();
+                break;
+            // Install the software - Create readable and executable files
+            case INSTALLING:
+                currentState = InstallationStatus.COMPLETED;
+                displayCompletedMessage();
+                break;
+            // The software has been installed
+            case COMPLETED:
+                // No more actions to take - Once the software has been installed.
+        }
+    }
+
+    /*
+    * Execute the previous installation of the software
+    */
+    public void executeBack(){
+        // Execute the current window state
+        switch (currentState){
+            // Display the information about the software
+            case INTRODUCTION:
+                // No action to take
+                break;
+            // Select the directory where the software is going to be installed
+            case SELECT_DIRECTORY:
+                currentState = InstallationStatus.INTRODUCTION;
+                displayIntroductionMessage();
+                break;
+            // Install the software - Create readable and executable files
+            case INSTALLING:
+                currentState = InstallationStatus.SELECT_DIRECTORY;
+                selectDirectory();
+                break;
+            // The software has been installed
+            case COMPLETED:
+                // No more actions to take - Once the software has been installed.
+        }
+    }
+
+    /*
+     * Display Introduction Message
+     */
+    private void displayIntroductionMessage(){
+        userActionPanel.setBorder(BorderFactory.createTitledBorder(currentState.getStatusCode()));
+        // Remove all the contents from this window
+        userActionPanel.removeAll();
+        // Create the current State of the software
+        JLabel messageToDisplay = new JLabel("Instruction Message Goes Here...");
+        userActionPanel.add(messageToDisplay);
+        // Update the action panel
+        backButton.setEnabled(false);
+        nextButton.setEnabled(true);
+        // Update the Gui to display the current state of the software installation
+        userActionPanel.updateUI();
+    }
+
+    /*
+     * Select the Installation Directory
+     */
+    private void selectDirectory(){
+        userActionPanel.setBorder(BorderFactory.createTitledBorder(currentState.getStatusCode()));
+        // Remove all the contents from this window
+        userActionPanel.removeAll();
+        // Create the current State of the software
+        JLabel messageToDisplay = new JLabel("Select Directory Message Goes Here...");
+        userActionPanel.add(messageToDisplay);
+        // Update the action panel
+        backButton.setEnabled(true);
+        nextButton.setEnabled(true);
+        // Update the Gui to display the current state of the software installation
+        userActionPanel.updateUI();
+    }
+
+    /*
+     * Installing Software
+     */
+    private void installingSoftware(){
+        userActionPanel.setBorder(BorderFactory.createTitledBorder(currentState.getStatusCode()));
+        // Remove all the contents from this window
+        userActionPanel.removeAll();
+        // Create the current State of the software
+        JTextArea messageToDisplay = new JTextArea("Create all scripts according to the OS and run them...\n" +
+                                             "Provide a check-box to select if Reader Advisor \nshould run after installation...\n" +
+                                             "-Uncomment executeNextState() \n-It's commented to display state");
+        messageToDisplay.setEditable(false);
+        userActionPanel.add(new JScrollPane(messageToDisplay));
+        // Update the action panel
+        backButton.setEnabled(true);
+        nextButton.setEnabled(true);
+        // Update the Gui to display the current state of the software installation
+        userActionPanel.updateUI();
+        // At this point the installation has been complete successfully
+        isInstallationCompleted.set(true);
+        // Don't allow the user to go backwards but automatically go to the Complete message
+        //executeNextState();
+    }
+
+    /*
+     * Display Completed Message
+     */
+    private void displayCompletedMessage(){
+        userActionPanel.setBorder(BorderFactory.createTitledBorder(currentState.getStatusCode()));
+        // Remove all the contents from this window
+        userActionPanel.removeAll();
+        backNextCancelPanel.removeAll();
+        // Create the current State of the software
+        JLabel messageToDisplay = new JLabel("Display Completed Message Goes Here...");
+        userActionPanel.add(messageToDisplay);
+        // Create the finish button
+        JButton installationCompleted = new JButton("Finished!");
+        installationCompleted.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0);
+            }
+        });
+        // Update the Gui to display the current state of the software installation
+        userActionPanel.updateUI();
+        backNextCancelPanel.add(installationCompleted);
+        backNextCancelPanel.updateUI();
     }
 
     /*
@@ -56,8 +188,14 @@ public class Installer extends JFrame {
      * Simply delete all directories and files created by the installer
      */
     private void rollback(){
-        // TODO : FILL THIS IN
-        System.out.println("Rolling back...");
+        System.out.println("Rolling back...");// TODO: Delete this line
+        for(File file : filesCreated){
+            try{
+                InstallerUtils.deleteFile(file);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
     }
 
     /*
@@ -93,9 +231,7 @@ public class Installer extends JFrame {
                 // The window must be set to visible for this event to work
                 setVisible(true);
                 // Perform rollback if the installation has not complete successfully
-                if (!isInstallationCompleted.get()) {
-                    rollback();
-                }
+                if (!isInstallationCompleted.get()) { rollback(); }
             }
         });//WindowListener
     }
@@ -107,17 +243,18 @@ public class Installer extends JFrame {
      *      Right panel - displays the user selections
      */
     private void createMainPanel(){
-        JPanel backgroundPanel = new JPanel(new GridLayout(1,2));
+        JPanel backgroundPanel = new JPanel(new BorderLayout());
         // Set up the left panel - rotation images panel
-        JPanel imageRotationPanel = new JPanel(new FlowLayout());
+        JPanel imageRotationPanel = new JPanel(new BorderLayout());
         imageRotationPanel.setBackground(Color.WHITE);
         // TODO : Pick up better images
         final ArrayList<String> imagesToRotate = new ArrayList<String>(Arrays.asList(
-                new String[]{"installer_big.png","speech_voice.png","speech_image.png"}));
+                new String[]{"installer_big.png","speech_voice.png","speech_image_2.png",
+                "speech_image_3.png","installer_1.png","installer_2.png"}));
         // Image rotation panel
         final JLabel imageHolder = new JLabel();
         final AtomicInteger imageNumber = new AtomicInteger(0);
-        imageRotationPanel.add(imageHolder);
+        imageRotationPanel.add(imageHolder, BorderLayout.CENTER);
         ActionListener taskPerformer = new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 // Change the image of this panel
@@ -133,12 +270,11 @@ public class Installer extends JFrame {
         Timer imageTimer = new Timer(DELAY_MS, taskPerformer);
         imageTimer.setInitialDelay(0);
         imageTimer.start();
-        backgroundPanel.add(imageRotationPanel);
+        backgroundPanel.add(imageRotationPanel, BorderLayout.WEST);
         // Set up the right panel - action panel
-        JPanel userActionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        JLabel label = new JLabel("Test");
-        userActionPanel.add(label);
-        backgroundPanel.add(userActionPanel);
+        userActionPanel.setBackground(Color.WHITE);
+        userActionPanel.setBorder(BorderFactory.createTitledBorder(currentState.getStatusCode()));
+        backgroundPanel.add(userActionPanel, BorderLayout.CENTER);
         // Add the panel to the GUI
         mainPanel.add(backgroundPanel, BorderLayout.CENTER);
     }
@@ -158,24 +294,40 @@ public class Installer extends JFrame {
      * Create Action panel - Back, Next, Cancel buttons
      */
     private void createBackNextCancelPanel(){
-        JPanel backNextCancelPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         // Set up the background color
         backNextCancelPanel.setBackground(Color.LIGHT_GRAY);
         // Add the action buttons to the panel
         backNextCancelPanel.add(backButton);
         backNextCancelPanel.add(nextButton);
         backNextCancelPanel.add(cancelButton);
-        // Set up the state of the action buttons
-        backButton.setEnabled(false);
-        nextButton.setEnabled(false);
         // Set up the action of the buttons
+        backButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        executeBack();
+                    }
+                });
+            }
+        });
+        nextButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        executeNextState();
+                    }
+                });
+            }
+        });
         cancelButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // Perform rollback if the installation has not complete successfully
-                if (!isInstallationCompleted.get()) {
-                    rollback();
-                }
+                if (!isInstallationCompleted.get()) {  rollback(); }
                 // Exit the program
                 System.exit(0);
             }

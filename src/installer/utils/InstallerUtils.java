@@ -2,6 +2,8 @@ package installer.utils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 
 /**
@@ -45,5 +47,34 @@ public class InstallerUtils {
             }
         }
         return imageIcon;
+    }
+
+    /*
+     * Delete the File - If it's a directory then delete it recursively
+     */
+    public static void deleteFile(File file) throws IOException {
+        // Delete the directory recursively
+        if(file.isDirectory()){
+            //directory is empty, then delete it
+            if(file.list().length==0){
+                file.delete();
+            }else{
+                //list all the directory contents
+                String files[] = file.list();
+                for (String temp : files) {
+                    //construct the file structure
+                    File fileDelete = new File(file, temp);
+                    //recursive delete
+                    deleteFile(fileDelete);
+                }
+                //check the directory again, if empty then delete it
+                if(file.list().length==0){
+                    file.delete();
+                }
+            }
+        }else{
+            //if file, then delete it
+            file.delete();
+        }
     }
 }
