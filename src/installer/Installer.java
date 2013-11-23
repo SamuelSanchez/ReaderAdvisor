@@ -5,13 +5,12 @@ import installer.utils.InstallerUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.io.File;
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Properties;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -24,6 +23,8 @@ public class Installer extends JFrame {
     // Vector that stores all the files created by the application
     // This is stored for rollback purposes
     private Vector<File> filesCreated = new Vector<File>();
+    // Directory where the files will be installed
+    private volatile File installationDirectory = new File(System.getProperty("user.dir"));
     // Boolean that states whether the installation has completed or not
     private AtomicBoolean isInstallationCompleted = new AtomicBoolean(false);
     // Panel where all the installation process is displayed and action panel
@@ -38,9 +39,16 @@ public class Installer extends JFrame {
     // Gui variables
     private static final int GUI_WIDTH = 500;
     private static final int GUI_HEIGHT = 350;
+    private static final int ICON_SIZE = 150;
+    private static final int TEXT_AREA_TRIM = 20;
     private static final int DELAY_MS = 2500;  // Delay before the next image loads
     // Current Installation State of the software
     private InstallationStatus currentState = InstallationStatus.INTRODUCTION;
+    // Messages to display to the user
+    private static final String propertiesFile = "src/installer/messages.properties"; //TODO: Have to fix this path
+    private Properties messagesToDisplay = new Properties();
+    // HACK : Fix the size of the JTextArea the first time that it runs
+    private boolean runOnce = true;
 
     // Run the Installer
     public static void run(){
@@ -108,8 +116,14 @@ public class Installer extends JFrame {
         // Remove all the contents from this window
         userActionPanel.removeAll();
         // Create the current State of the software
-        JLabel messageToDisplay = new JLabel("Instruction Message Goes Here...");
-        userActionPanel.add(messageToDisplay);
+        // HACK : Fix the size of the JTextArea - BUG: The size of the JTextArea is not being set properly
+        if(runOnce){
+            userActionPanel.add(getTextAreaMessage(messagesToDisplay.get("Introduction").toString(),321,235));
+            runOnce = false;
+        }else{
+            userActionPanel.add(getTextAreaMessage(messagesToDisplay.get("Introduction").toString()));
+        }
+        userActionPanel.repaint();
         // Update the action panel
         backButton.setEnabled(false);
         nextButton.setEnabled(true);
@@ -124,9 +138,14 @@ public class Installer extends JFrame {
         userActionPanel.setBorder(BorderFactory.createTitledBorder(currentState.getStatusCode()));
         // Remove all the contents from this window
         userActionPanel.removeAll();
-        // Create the current State of the software
-        JLabel messageToDisplay = new JLabel("Select Directory Message Goes Here...");
-        userActionPanel.add(messageToDisplay);
+        // Create the current Panel of the software
+        userActionPanel.add(getTextAreaMessage(messagesToDisplay.get("InstallationDirectory").toString()));
+        // Create the installation directory panel
+        JPanel installationDirectoryPanel = new JPanel(new GridLayout(2,1));
+        installationDirectoryPanel.add(new JLabel("Directory:"));
+        installationDirectoryPanel.add(getTextFieldThatSelectDirectory());
+        installationDirectoryPanel.setBackground(Color.WHITE);
+        userActionPanel.add(installationDirectoryPanel);
         // Update the action panel
         backButton.setEnabled(true);
         nextButton.setEnabled(true);
@@ -141,17 +160,23 @@ public class Installer extends JFrame {
         userActionPanel.setBorder(BorderFactory.createTitledBorder(currentState.getStatusCode()));
         // Remove all the contents from this window
         userActionPanel.removeAll();
-        // Create the current State of the software
-        JTextArea messageToDisplay = new JTextArea("Create all scripts according to the OS and run them...\n" +
-                                             "Provide a check-box to select if Reader Advisor \nshould run after installation...\n" +
-                                             "-Uncomment executeNextState() \n-It's commented to display state");
-        messageToDisplay.setEditable(false);
-        userActionPanel.add(new JScrollPane(messageToDisplay));
-        // Update the action panel
-        backButton.setEnabled(true);
-        nextButton.setEnabled(true);
-        // Update the Gui to display the current state of the software installation
-        userActionPanel.updateUI();
+        // Once the software is installing - Do not allow the user to go back
+        backButton.setVisible(false);
+        nextButton.setVisible(false);
+        try{
+            // Create the current State of the software
+            userActionPanel.add(getTextAreaMessage("Message to be filled"));
+            // Update the Gui to display the current state of the software installation
+            userActionPanel.updateUI();
+        }catch (Exception e){
+            // -- Create the only action button - Exit the software installation -- //
+            cancelButton.setText("Exit!");
+            //backNextCancelPanel.updateUI();
+            // -- Display the error message -- //
+            userActionPanel.setBorder(BorderFactory.createTitledBorder("Installation Error!"));
+            userActionPanel.add(getTextAreaMessage(Arrays.toString(e.getStackTrace())));
+            userActionPanel.updateUI();
+        }
         // At this point the installation has been complete successfully
         isInstallationCompleted.set(true);
         // Don't allow the user to go backwards but automatically go to the Complete message
@@ -167,8 +192,7 @@ public class Installer extends JFrame {
         userActionPanel.removeAll();
         backNextCancelPanel.removeAll();
         // Create the current State of the software
-        JLabel messageToDisplay = new JLabel("Display Completed Message Goes Here...");
-        userActionPanel.add(messageToDisplay);
+        userActionPanel.add(getTextAreaMessage(messagesToDisplay.get("Installed").toString()));
         // Create the finish button
         JButton installationCompleted = new JButton("Finished!");
         installationCompleted.addActionListener(new ActionListener() {
@@ -199,6 +223,91 @@ public class Installer extends JFrame {
     }
 
     /*
+    * Return a text field that will display the directory selected by the user
+    * If the text field is double clicked then a different directory can be selected
+    * Provide a directory to display
+    */
+    public JTextField getTextFieldThatSelectDirectory(){
+        final JTextField selectInstallationDirectoryField = new JTextField(28);
+        selectInstallationDirectoryField.setHorizontalAlignment(JTextField.LEFT);
+        selectInstallationDirectoryField.setText(InstallerUtils.getFileFullPath(installationDirectory));
+        selectInstallationDirectoryField.setToolTipText("Double click to change the directory");
+        selectInstallationDirectoryField.setEnabled(false);
+        selectInstallationDirectoryField.setBackground(Color.BLACK);
+        selectInstallationDirectoryField.setForeground(Color.WHITE);
+        //selectInstallationDirectoryField.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        // Allow the user to select a different directory when clicking this text field
+        selectInstallationDirectoryField.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Open the directory on a double click
+                if (e.getClickCount() == 2 && !e.isConsumed()) {
+                    // Consume the click events
+                    e.consume();
+                    // Open the directory and choose a new directory to store the audio files - set default location if any
+                    JFileChooser fileChooser = new JFileChooser(installationDirectory);
+                    // Only display directories
+                    fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                    // Retrieve the value of the option performed
+                    int value = fileChooser.showOpenDialog(null);
+                    // The selected directory will be used to store the audio files
+                    // Display an error if the selected directory does not have read/write access
+                    if (value == JFileChooser.APPROVE_OPTION) {
+                        // Make this directory the Audio directory
+                        if (fileChooser.getSelectedFile().canRead() && fileChooser.getSelectedFile().canWrite()) {
+                            installationDirectory = fileChooser.getSelectedFile();
+                            // Retrieve this full path and display it in the gui
+                            selectInstallationDirectoryField.setText(InstallerUtils.getFileFullPath(installationDirectory));
+                        }
+                        // Display an error message
+                        else {
+                            // TODO : Test in a different OS - Windows behaves different
+                            StringBuilder accesses = new StringBuilder();
+                            // Check if the file has read access
+                            if (!fileChooser.getSelectedFile().canRead()) {
+                                accesses.append(InstallerUtils.NEW_LINE).append("- read access");
+                            }
+                            // Check if the file has write access
+                            if (!fileChooser.getSelectedFile().canWrite()) {
+                                accesses.append(InstallerUtils.NEW_LINE).append("- write access");
+                            }
+                            // Do not display any error message if the list is empty - this should not happened
+                            if (accesses.length() > 0) {
+                                String message = (fileChooser.getSelectedFile().getName() + " does not have :" + accesses.toString());
+                                JOptionPane.showMessageDialog(null, message, "Audio File Error", JOptionPane.ERROR_MESSAGE);
+                            }
+                        }// else - display the error message
+                    }// if - selected director
+                }// Double click
+            }// Mouse event
+        });
+        return selectInstallationDirectoryField;
+    }
+
+    /*
+     * Create a Generic Text area where the messages will be displayed
+     */
+    private JScrollPane getTextAreaMessage(String message){
+        return getTextAreaMessage(message,Math.abs(userActionPanel.getWidth())-TEXT_AREA_TRIM,Math.abs(userActionPanel.getHeight())-TEXT_AREA_TRIM);
+    }
+
+    /*
+     * Create a Generic Text Area where the messages will be display - Provide the width and height of the text area
+     */
+    private JScrollPane getTextAreaMessage(String message, int width, int height){
+        JTextArea messageToDisplay = new JTextArea(message);
+        messageToDisplay.setEditable(false);
+        messageToDisplay.setLineWrap(true);
+        //messageToDisplay.setOpaque(false);
+        messageToDisplay.setWrapStyleWord(false);
+        messageToDisplay.setSize(width,height);
+        // Don't display the border
+        JScrollPane scrollPane = new JScrollPane(messageToDisplay);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        return scrollPane;
+    }
+
+    /*
      * Constructor - Set up all the Gui Components
      */
     public Installer(){
@@ -211,6 +320,13 @@ public class Installer extends JFrame {
         container.add(mainPanel);
         // Refresh the gui container
         this.setContentPane(container);
+        // Load properties message
+        try{
+            messagesToDisplay.load(new FileInputStream(propertiesFile));
+        }catch(Exception e){
+            messagesToDisplay.setProperty("Introduction","Click next to proceed the Reader Advisor installtion...");
+            messagesToDisplay.setProperty("Installed","You have successfully installed Reader Advisor!");
+        }
     }
 
     // Set up the GUI Window
@@ -247,7 +363,6 @@ public class Installer extends JFrame {
         // Set up the left panel - rotation images panel
         JPanel imageRotationPanel = new JPanel(new BorderLayout());
         imageRotationPanel.setBackground(Color.WHITE);
-        // TODO : Pick up better images
         final ArrayList<String> imagesToRotate = new ArrayList<String>(Arrays.asList(
                 new String[]{"installer_big.png","speech_voice.png","speech_image_2.png",
                 "speech_image_3.png","installer_1.png","installer_2.png"}));
@@ -258,7 +373,7 @@ public class Installer extends JFrame {
         ActionListener taskPerformer = new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 // Change the image of this panel
-                imageHolder.setIcon(InstallerUtils.createIcon(imagesToRotate.get(imageNumber.get()),null,150,150));
+                imageHolder.setIcon(InstallerUtils.createIcon(imagesToRotate.get(imageNumber.get()),null,ICON_SIZE,ICON_SIZE));
                 // Iterate to the next image
                 imageNumber.set(imageNumber.get()+1);
                 // Reset the image number - Alternatively we can mode this number by the size of the array or provide a random number

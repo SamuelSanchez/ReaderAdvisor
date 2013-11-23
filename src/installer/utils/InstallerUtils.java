@@ -17,6 +17,7 @@ public class InstallerUtils {
     private static final Integer ICON_HEIGHT = 20;
     private static final String SEPARATOR = System.getProperty("file.separator");
     public static final String ICON_DIRECTOR = "icon" + SEPARATOR;
+    public static final String NEW_LINE = System.getProperty("line.separator");
 
     /*
      * Create the icon for the GUI
@@ -76,5 +77,21 @@ public class InstallerUtils {
             //if file, then delete it
             file.delete();
         }
+    }
+
+    /*
+    * Get the full path of the directory
+    */
+    public static String getFileFullPath(File file){
+        String fullPathName = null;
+        if(file != null){
+            fullPathName = file.getAbsolutePath();
+            try{
+                fullPathName = file.getCanonicalPath();
+            }catch (IOException e){
+                // Do nothing
+            }
+        }
+        return fullPathName;
     }
 }
