@@ -16,7 +16,7 @@ public class SaveAudioFilePanel {
     // Gui Window where this panel belongs
     private JDialog frame;
     // Values are configuration in 'software.properties' file
-    private AtomicBoolean saveUserReadingTrial = new AtomicBoolean(GlobalProperties.getInstance().getPropertyAsBoolean("saveAudioFilePanel.saveUserReadingTrial"));
+    private AtomicBoolean saveUserReadingTrial = new AtomicBoolean();
     // Type of the Audio file
     private AudioFileFormat.Type audioType = null;
     // Global variables since their values will be constantly read

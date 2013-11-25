@@ -18,6 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Installer that create the software.properties file
  * It will run all scripts and create all jars needed to install for this class
+ * Note: This installer will install all files that are
  */
 public class Installer extends JFrame {
     // Vector that stores all the files created by the application
@@ -25,6 +26,10 @@ public class Installer extends JFrame {
     private Vector<File> filesCreated = new Vector<File>();
     // Directory where the files will be installed
     private volatile File installationDirectory = new File(System.getProperty("user.dir"));
+    // Installation directory progress bar
+    private volatile JProgressBar installationDirectoryProgress = new JProgressBar();
+    // Rollback progress bar
+    private volatile JProgressBar rollbackProgressBar = new JProgressBar();
     // Boolean that states whether the installation has completed or not
     private AtomicBoolean isInstallationCompleted = new AtomicBoolean(false);
     // Panel where all the installation process is displayed and action panel
@@ -164,8 +169,9 @@ public class Installer extends JFrame {
         backButton.setVisible(false);
         nextButton.setVisible(false);
         try{
+            java.net.URL location = Installer.class.getProtectionDomain().getCodeSource().getLocation();
             // Create the current State of the software
-            userActionPanel.add(getTextAreaMessage("Message to be filled"));
+            userActionPanel.add(getTextAreaMessage(location.getFile()));
             // Update the Gui to display the current state of the software installation
             userActionPanel.updateUI();
         }catch (Exception e){

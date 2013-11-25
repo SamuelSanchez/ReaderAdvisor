@@ -58,32 +58,31 @@ public class AudioUtils {
      */
     public  static synchronized void saveAudio(LiveRecognizer liveRecognizer, String fileName, AudioFileFormat.Type fileFormat) throws IOException {
         Vector<Utterance> utteranceVector = liveRecognizer.getUtteranceList();
-        if(!utteranceVector.isEmpty()){
-            File file = new File(fileName);
-            AudioFormat audioFormat = utteranceVector.lastElement().getAudioFormat();
-            byte[] audio = {};
-            // Iterate through all utterance vector
-            for(Utterance utterance : utteranceVector){
-                // Increase the audio length
-                byte[] temp = new byte[audio.length + utterance.getAudio().length];
-                // Copy the array element
-                System.arraycopy(audio, 0, temp, 0, audio.length);
-                System.arraycopy(utterance.getAudio(), 0, temp, audio.length, utterance.getAudio().length);
-                // Copy the temporary file into the new file
-                audio = temp;
-            }
-            // Add the last utterance that is currently held in the microphone
-            Utterance currentUtterance = liveRecognizer.getCurrentUtterance();
-            byte[] temp = new byte[audio.length + currentUtterance.getAudio().length];
+        // Store Audio File
+        File file = new File(fileName);
+        byte[] audio = {};
+        // Iterate through all utterance vector
+        for(Utterance utterance : utteranceVector){
+            // Increase the audio length
+            byte[] temp = new byte[audio.length + utterance.getAudio().length];
             // Copy the array element
             System.arraycopy(audio, 0, temp, 0, audio.length);
-            System.arraycopy(currentUtterance.getAudio(), 0, temp, audio.length, currentUtterance.getAudio().length);
+            System.arraycopy(utterance.getAudio(), 0, temp, audio.length, utterance.getAudio().length);
             // Copy the temporary file into the new file
             audio = temp;
-            // Store the audio file
-            AudioInputStream ais = new AudioInputStream
-                    ((new ByteArrayInputStream(audio)), audioFormat, audio.length);
-            AudioSystem.write(ais, fileFormat, file);
         }
+        // Add the last utterance that is currently held in the microphone
+        Utterance currentUtterance = liveRecognizer.getCurrentUtterance();
+        AudioFormat audioFormat = currentUtterance.getAudioFormat();
+        byte[] temp = new byte[audio.length + currentUtterance.getAudio().length];
+        // Copy the array element
+        System.arraycopy(audio, 0, temp, 0, audio.length);
+        System.arraycopy(currentUtterance.getAudio(), 0, temp, audio.length, currentUtterance.getAudio().length);
+        // Copy the temporary file into the new file
+        audio = temp;
+        // Store the audio file
+        AudioInputStream ais = new AudioInputStream
+                ((new ByteArrayInputStream(audio)), audioFormat, audio.length);
+        AudioSystem.write(ais, fileFormat, file);
     }
 }

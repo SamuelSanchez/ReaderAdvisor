@@ -280,7 +280,7 @@ public class SpeechManager {
             return;
         }
         // Clear the Utterance list
-        liveRecognizer.clearUtteranceList();
+        recognizer.clearUtteranceList();
         // Stop recognizing and reset reference
         recognizer.stopRecording();
         recognizer.resetReference();
@@ -295,6 +295,8 @@ public class SpeechManager {
      * Save the Audio File
      */
     public void saveAudioFile(){
-        AudioUtils.saveAudioFile(liveRecognizer);
+        if(liveRecognizer != null){
+            AudioUtils.saveAudioFile(liveRecognizer);
+        }
     }
 }

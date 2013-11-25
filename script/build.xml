@@ -59,12 +59,16 @@ Project information to be disclosed soon.
     <!-- *                                                        * -->
     <!-- ********************************************************** -->
     <target name="clean" description="Cleans all the compiled and Jar files.">
-        <!--delete file="../exec/readerAdvisor.config.xml" /-->
-        <!--delete file="../exec/software.properties" /-->
+        <delete file="../exec/software.properties" />
+        <delete file="../exec/run.bat" />
+        <delete file="../exec/run.sh" />
         <delete file="${Jar_name}" />
         <delete dir="${package_name}" />
         <delete dir="../exec/icon" />
         <delete dir="../exec/lib" />
+        <delete dir="../exec/config" />
+        <delete dir="../exec/audio" />
+        <delete dir="../exec/temp" />
         <delete dir="../exec/com" />
         <delete dir="../exec/edu" />
         <delete dir="../exec/TIDIGITS_8gau_13dCep_16k_40mel_130Hz_6800Hz" />
@@ -87,7 +91,7 @@ Project information to be disclosed soon.
         <!-- Create files that should not be deleted -->
         <mkdir dir="../exec/config"/>
         <copy todir="../exec/lib">
-            <fileset dir="${lib_dir}" includes="**.jar"/>
+            <fileset dir="${lib_dir}" includes="batch.jar, sphinx4.jar"/>
         </copy>
         <copy todir="../exec/icon">
             <fileset dir="${icon_dir}" includes="**.png, **.ico"/>
@@ -101,6 +105,7 @@ Project information to be disclosed soon.
         </copy>
         <copy todir="../exec">
             <fileset dir="${script}" includes="software.properties"/>
+            <fileset dir="${bin_dir}"/>
         </copy>
     </target>
 
@@ -110,7 +115,7 @@ Project information to be disclosed soon.
     <!-- * Compiles and creates a exectutable jar for the code.   * -->
     <!-- *                                                        * -->
     <!-- ********************************************************** -->
-    <target name="default" description="By Default only compiles the code." depends="compile"/>
+    <target name="default" description="By Default only compiles the code." depends="run"/>
 
 
     <!-- ********************************************************** -->
@@ -118,14 +123,12 @@ Project information to be disclosed soon.
     <!-- * Runs the project demo.                                 * -->
     <!-- *                                                        * -->
     <!-- ********************************************************** -->
-    <target name="run" description="Runs the Program - The project must be compiled first.">
+    <target name="run" description="Runs the Program - The project must be compiled first." depends="compile">
             <java classname="${package_name}.${MainApp}" classpath="." fork="yes" maxmemory="${memory_cap}">
                 <classpath refid="run.classpath"/>
                 <jvmarg value="-server"/>
                 <jvmarg value="-XX:+PrintGCDetails"/>
-                <!--<sysproperty key="java.util.logging.config.file" value="tidigits.props"/>-->
                 <sysproperty key="frontend" value="epFrontEnd"/>
-                <!--<sysproperty key="showPartialResults" value="true"/>-->
                 <sysproperty key="microphone[keepLastAudio]" value="true"/>
                 <sysproperty key="configurationFile" value="${properties}"/>
 	    </java>
@@ -137,18 +140,16 @@ Project information to be disclosed soon.
     <!-- * Creates a jar for all the code with the compiled code. * -->
     <!-- *                                                        * -->
     <!-- ********************************************************** -->
-    <target name="jar" description="Creates a runnable Jar excluding the Source code and build.xml" depends="default">
-	    <jar destfile="${Jar_name}" basedir="../exec" >
-            <exclude name="${src_dir}/**" />
-            <exclude name="build.xml" />
-            <manifest>
-                 <attribute name="Main-Class" value="${package_name}.${MainApp}" />
-            </manifest>
-            <!--<fileset dir="${lib_dir}" />-->
-            <zipgroupfileset dir="${lib_dir}" includes="*.jar" />
-            <!--<fileset dir="${icon_dir}" includes="*.png" />-->
-	    </jar>
-    </target>
+    <!--<target name="jar" description="Creates a runnable Jar excluding the Source code and build.xml" depends="default">-->
+	    <!--<jar destfile="${Jar_name}" basedir="../exec" >-->
+            <!--<manifest>-->
+                 <!--<attribute name="Main-Class" value="${package_name}.${MainApp}" />-->
+            <!--</manifest>-->
+            <!--&lt;!&ndash;<fileset dir="${lib_dir}" />&ndash;&gt;-->
+            <!--<zipgroupfileset dir="${lib_dir}" includes="*.jar" />-->
+            <!--&lt;!&ndash;<fileset dir="${icon_dir}" includes="*.png" />&ndash;&gt;-->
+	    <!--</jar>-->
+    <!--</target>-->
 
 
     <!-- ********************************************************** -->
@@ -156,15 +157,15 @@ Project information to be disclosed soon.
     <!-- * Runs the Project Jar Demo.                             * -->
     <!-- *                                                        * -->
     <!-- ********************************************************** -->
-    <target name="runJ" description="Runs the Project Jar Demo.">
-            <java jar="${Jar_name}" fork="true" maxmemory="${memory_cap}">
-                <classpath refid="run.classpath"/>
-                <jvmarg value="-server"/>
-                <!--<sysproperty key="java.util.logging.config.file" value="tidigits.props"/>-->
-                <sysproperty key="frontend" value="epFrontEnd"/>
-                <!--<sysproperty key="showPartialResults" value="true"/>-->
-                <sysproperty key="microphone[keepLastAudio]" value="false"/>
-                <sysproperty key="configurationFile" value="${properties}"/>
-	    	</java>
-    </target>
+    <!--<target name="runJ" description="Runs the Project Jar Demo.">-->
+            <!--<java jar="${Jar_name}" fork="true" maxmemory="${memory_cap}">-->
+                <!--<classpath refid="run.classpath"/>-->
+                <!--<jvmarg value="-server"/>-->
+                <!--&lt;!&ndash;<sysproperty key="java.util.logging.config.file" value="tidigits.props"/>&ndash;&gt;-->
+                <!--<sysproperty key="frontend" value="epFrontEnd"/>-->
+                <!--&lt;!&ndash;<sysproperty key="showPartialResults" value="true"/>&ndash;&gt;-->
+                <!--<sysproperty key="microphone[keepLastAudio]" value="false"/>-->
+                <!--<sysproperty key="configurationFile" value="${properties}"/>-->
+	    	<!--</java>-->
+    <!--</target>-->
 </project>
