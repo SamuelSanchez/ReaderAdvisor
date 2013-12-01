@@ -2,6 +2,7 @@ package installer.utils;
 
 import javax.swing.*;
 import java.io.File;
+import java.util.List;
 import java.util.Vector;
 
 /*
@@ -39,10 +40,23 @@ public class InstallationWorker extends SwingWorker<Integer,String> {
         int installedFilesCount = 0;
         // Display installing message
         publish("Installing...");
-
-
-
+        for(int i = 1; i <= 20; i++){
+            // Install the files
+            Thread.sleep(1000);
+            InstallationWorker.failIfInterrupted();
+            publish("Second : " + i);
+            // Update the progress
+            setProgress((i+1) * 100 / 20);
+        }
         // Return the number of files installed
         return installedFilesCount;
+    }
+
+    protected void process(final List<String> list){
+        // Update the text are with messages
+        for(final String message : list){
+            installationMessageArea.append(message);
+            installationMessageArea.append(InstallerUtils.NEW_LINE);
+        }
     }
 }

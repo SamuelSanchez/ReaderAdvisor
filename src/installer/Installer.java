@@ -1,11 +1,14 @@
 package installer;
 
 import installer.utils.InstallationStatus;
+import installer.utils.InstallationWorker;
 import installer.utils.InstallerUtils;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
@@ -26,14 +29,14 @@ public class Installer extends JFrame {
     private Vector<File> filesCreated = new Vector<File>();
     // Directory where the files will be installed
     private volatile File installationDirectory = new File(System.getProperty("user.dir"));
-    // Installation directory progress bar
-    private volatile JProgressBar installationDirectoryProgress = new JProgressBar();
     // Rollback progress bar
     private volatile JProgressBar rollbackProgressBar = new JProgressBar();
+    // Installation Worker thread - Installs the directories
+    private InstallationWorker installationWorker = null;
     // Boolean that states whether the installation has completed or not
     private AtomicBoolean isInstallationCompleted = new AtomicBoolean(false);
     // Panel where all the installation process is displayed and action panel
-    private JPanel userActionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+    private JPanel userActionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
     private JPanel backNextCancelPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
     // Action Buttons
     private JButton backButton = new JButton("Back");
@@ -45,13 +48,17 @@ public class Installer extends JFrame {
     private static final int GUI_WIDTH = 500;
     private static final int GUI_HEIGHT = 350;
     private static final int ICON_SIZE = 150;
-    private static final int TEXT_AREA_TRIM = 20;
+    private static final int TRIM_WIDTH = 20;
+    private static final int TRIM_HEIGHT = 40;
     private static final int DELAY_MS = 2500;  // Delay before the next image loads
     // Current Installation State of the software
     private InstallationStatus currentState = InstallationStatus.INTRODUCTION;
     // Messages to display to the user
     private static final String propertiesFile = "src/installer/messages.properties"; //TODO: Have to fix this path
     private Properties messagesToDisplay = new Properties();
+    // Installation Edition
+    private enum EDITION { USER, DEVELOPER }
+    private EDITION currentEdition = EDITION.USER;
     // HACK : Fix the size of the JTextArea the first time that it runs
     private boolean runOnce = true;
 
@@ -151,6 +158,8 @@ public class Installer extends JFrame {
         installationDirectoryPanel.add(getTextFieldThatSelectDirectory());
         installationDirectoryPanel.setBackground(Color.WHITE);
         userActionPanel.add(installationDirectoryPanel);
+        // Add the installation edition panel
+        userActionPanel.add(getInstallationEdition());
         // Update the action panel
         backButton.setEnabled(true);
         nextButton.setEnabled(true);
@@ -162,6 +171,7 @@ public class Installer extends JFrame {
      * Installing Software
      */
     private void installingSoftware(){
+        Dimension preferredSize = new Dimension(Math.abs(userActionPanel.getWidth())- TRIM_WIDTH,Math.abs(userActionPanel.getHeight())- TRIM_HEIGHT);
         userActionPanel.setBorder(BorderFactory.createTitledBorder(currentState.getStatusCode()));
         // Remove all the contents from this window
         userActionPanel.removeAll();
@@ -169,24 +179,31 @@ public class Installer extends JFrame {
         backButton.setVisible(false);
         nextButton.setVisible(false);
         try{
-            java.net.URL location = Installer.class.getProtectionDomain().getCodeSource().getLocation();
-            // Create the current State of the software
-            userActionPanel.add(getTextAreaMessage(location.getFile()));
-            // Update the Gui to display the current state of the software installation
+            // Create the Text Area where the messages will be displayed
+            JTextArea textArea = getTextArea();
+            // Create the worker thread that will perform the installation
+            installationWorker = new InstallationWorker(installationDirectory,textArea,filesCreated);
+            JPanel installationPanel = getInstallationPanel(installationWorker);
+            // Don't display the border
+            JScrollPane scrollPane = new JScrollPane(textArea);
+            scrollPane.setBorder(BorderFactory.createEmptyBorder());
+            scrollPane.setPreferredSize(preferredSize);
+            installationPanel.add(scrollPane);
+            userActionPanel.add(installationPanel);
+            // Start the worker
+            installationWorker.execute();
             userActionPanel.updateUI();
         }catch (Exception e){
             // -- Create the only action button - Exit the software installation -- //
             cancelButton.setText("Exit!");
-            //backNextCancelPanel.updateUI();
             // -- Display the error message -- //
+            userActionPanel.removeAll();
             userActionPanel.setBorder(BorderFactory.createTitledBorder("Installation Error!"));
-            userActionPanel.add(getTextAreaMessage(Arrays.toString(e.getStackTrace())));
+            userActionPanel.add(new JLabel("Error Message:"));
+            userActionPanel.add(getTextAreaMessage(e.getMessage()));
+            JOptionPane.showMessageDialog(null,InstallerUtils.getArrayAsString(e.getStackTrace()),"Installation Error!",JOptionPane.ERROR_MESSAGE);
             userActionPanel.updateUI();
         }
-        // At this point the installation has been complete successfully
-        isInstallationCompleted.set(true);
-        // Don't allow the user to go backwards but automatically go to the Complete message
-        //executeNextState();
     }
 
     /*
@@ -197,6 +214,16 @@ public class Installer extends JFrame {
         // Remove all the contents from this window
         userActionPanel.removeAll();
         backNextCancelPanel.removeAll();
+        // Provide a link for the user to learn how to use the software
+        JLabel readMe = InstallerUtils.getHyperlinkLabel(messagesToDisplay.get("ReadMe").toString(),"Read me");
+        readMe.setToolTipText("Learn more about this software");
+        userActionPanel.add(readMe);
+        // Provide a link for the developer to learn how to setup this software in IntelliJ
+        if(currentEdition.equals(EDITION.DEVELOPER)){
+            JLabel intelliJ = InstallerUtils.getHyperlinkLabel(messagesToDisplay.get("IntelliJSetup").toString(),"IntelliJ Setup");
+            intelliJ.setToolTipText("Learn how to develop this software using IntelliJ");
+            userActionPanel.add(intelliJ);
+        }
         // Create the current State of the software
         userActionPanel.add(getTextAreaMessage(messagesToDisplay.get("Installed").toString()));
         // Create the finish button
@@ -291,10 +318,125 @@ public class Installer extends JFrame {
     }
 
     /*
+     * Create the panel of the installation edition
+     * User Edition - Install the executables for the user to use
+     * Developer Edition - Install the source code for the user to modify
+     */
+    private JPanel getInstallationEdition(){
+        // Provide a radio box for the type of installation
+        JPanel installationMode = new JPanel(new GridLayout(3,1));
+        installationMode.setBackground(Color.WHITE);
+        ButtonGroup buttonGroup = new ButtonGroup();
+        // By default select the user edition
+        JRadioButton userEdition = new JRadioButton("User edition",true);
+        JRadioButton develEdition = new JRadioButton("Developer Edition");
+        // Provide more description to the user options
+        userEdition.setBackground(Color.WHITE);
+        userEdition.setToolTipText("Use the software out of the box");
+        // Update the current software edition as per user request
+        userEdition.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if(e.getStateChange() == 1){ currentEdition = EDITION.USER; }
+            }
+        });
+        develEdition.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if(e.getStateChange() == 1){ currentEdition = EDITION.DEVELOPER; }
+            }
+        });
+        develEdition.setBackground(Color.WHITE);
+        develEdition.setToolTipText("Perform modification to the software");
+        // Group them together so that only one can be selected at the time
+        buttonGroup.add(userEdition);
+        buttonGroup.add(develEdition);
+        installationMode.add(new JLabel("Edition:"));
+        installationMode.add(userEdition);
+        installationMode.add(develEdition);
+        // Return this panel
+        return installationMode;
+    }
+
+    /*
+     * Panel where the installation is performed
+     */
+    private JPanel getInstallationPanel(final InstallationWorker installationWorker){
+        JPanel installationPanel = new JPanel();
+        installationPanel.setBackground(Color.WHITE);
+        final JProgressBar installationDirectoryProgress = new JProgressBar();
+        // TODO: Test this width in different OS
+        installationDirectoryProgress.setPreferredSize(new Dimension(400,15));
+        installationDirectoryProgress.setToolTipText("Preparing for the installation...");
+        installationDirectoryProgress.setStringPainted(true);
+        installationDirectoryProgress.setBackground(Color.WHITE);
+        userActionPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+        // Provide the installation property thread
+        installationWorker.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(final PropertyChangeEvent event) {
+                String propertyName = event.getPropertyName();
+                if(propertyName.equalsIgnoreCase("progress")){
+                    System.out.println("PROGRESS");
+                    installationDirectoryProgress.setIndeterminate(false);
+                    installationDirectoryProgress.setValue((Integer) event.getNewValue());
+                    // Update the Tool Tip dynamically when mouse is not in motion
+                    installationDirectoryProgress.setToolTipText("Progress: " + (event.getNewValue()) + "%");
+                    InstallerUtils.updateToolTipMessageDynamically(installationDirectoryProgress);
+                }
+                else if(propertyName.equalsIgnoreCase("state")){
+                    if(event.getNewValue() instanceof SwingWorker.StateValue){
+                        switch ((SwingWorker.StateValue) event.getNewValue()){
+                            case DONE:
+                                // Hide the progress bar
+                                installationDirectoryProgress.setVisible(false);
+                                installationDirectoryProgress.setToolTipText(null);
+                                InstallerUtils.updateToolTipMessageDynamically(installationDirectoryProgress);
+                                // If the installation is
+                                if(!installationWorker.isCancelled()){
+                                    System.out.println("DONE");
+                                    // At this point the installation has been complete successfully
+                                    isInstallationCompleted.set(true);
+                                    // Don't allow the user to go backwards but automatically go to the Complete message
+                                    executeNextState();
+                                }
+                                else{
+                                    System.out.println("CANCELLED");
+                                }
+                                break;
+                            case STARTED:
+                            case PENDING:
+                                System.out.println("PENDING");
+                                installationDirectoryProgress.setVisible(true);
+                                installationDirectoryProgress.setIndeterminate(true);
+                                break;
+                        }
+                    }
+                }
+            }
+        });
+        // Add panels where they belong
+        backNextCancelPanel.add(installationDirectoryProgress,0);
+        return installationPanel;
+    }
+
+    /*
+     * Create and return an costomizable JTextArea
+     */
+    private JTextArea getTextArea(){
+        JTextArea messageToDisplay = new JTextArea();
+        messageToDisplay.setEditable(false);
+        messageToDisplay.setLineWrap(true);
+        messageToDisplay.setWrapStyleWord(true);
+        messageToDisplay.setSize(Math.abs(userActionPanel.getWidth())- TRIM_WIDTH,Math.abs(userActionPanel.getHeight())- TRIM_HEIGHT);
+        return messageToDisplay;
+    }
+
+    /*
      * Create a Generic Text area where the messages will be displayed
      */
     private JScrollPane getTextAreaMessage(String message){
-        return getTextAreaMessage(message,Math.abs(userActionPanel.getWidth())-TEXT_AREA_TRIM,Math.abs(userActionPanel.getHeight())-TEXT_AREA_TRIM);
+        return getTextAreaMessage(message,Math.abs(userActionPanel.getWidth())- TRIM_WIDTH,Math.abs(userActionPanel.getHeight())- TRIM_HEIGHT);
     }
 
     /*
@@ -305,7 +447,7 @@ public class Installer extends JFrame {
         messageToDisplay.setEditable(false);
         messageToDisplay.setLineWrap(true);
         //messageToDisplay.setOpaque(false);
-        messageToDisplay.setWrapStyleWord(false);
+        messageToDisplay.setWrapStyleWord(true);
         messageToDisplay.setSize(width,height);
         // Don't display the border
         JScrollPane scrollPane = new JScrollPane(messageToDisplay);
@@ -447,6 +589,10 @@ public class Installer extends JFrame {
         cancelButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                // Cancel the current installation if the software is being installed
+                if (installationWorker != null){
+                    installationWorker.cancel(true);
+                }
                 // Perform rollback if the installation has not complete successfully
                 if (!isInstallationCompleted.get()) {  rollback(); }
                 // Exit the program
