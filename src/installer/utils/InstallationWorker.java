@@ -39,6 +39,7 @@ public class InstallationWorker extends SwingWorker<Integer,String> {
         // Progress - Number of files that the software has installed
         int installedFilesCount = 0;
         // Display installing message
+        InstallationWorker.failIfInterrupted();
         publish("Installing...");
         for(int i = 1; i <= 20; i++){
             // Install the files

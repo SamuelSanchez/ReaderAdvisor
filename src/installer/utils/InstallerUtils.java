@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Utilities that will facilitate the creation of images, files, etc
  * for the Installer class
  */
+@SuppressWarnings("unused")
 public class InstallerUtils {
 
     // Properties
@@ -161,69 +162,52 @@ public class InstallerUtils {
         return hyperlink;
     }
 
-//    public static void updateNimbusUI(){
-//    UIManager.put("nimbusBase", new Color(...));
-//    UIManager.put("nimbusBlueGrey", new Color(...));
-//    UIManager.put("control", new Color(...));
-//        try {
-//            for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-//                if ("Nimbus".equals(info.getName())) {
-//                    UIManager.setLookAndFeel(info.getClassName());
-//                    break;
-//                }
-//            }
-//        } catch (Exception e) {
-//            // If Nimbus is not available, fall back to cross-platform
-//            try {
-//                UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-//            } catch (Exception ex) {
-//                // not worth my time
-//            }
-//        }
-//    }
-//    public class TestZip02 {
-//
-//        public static void main(String[] args) {
-//            try {
-//                zip(new File("TextFiles.zip"), new File("sample.txt"));
-//            } catch (IOException ex) {
-//                ex.printStackTrace();
-//            }
-//        }
-//
-//        public static void zip(File zip, File file) throws IOException {
-//            ZipOutputStream zos = null;
-//            try {
-//                String name = file.getName();
-//                zos = new ZipOutputStream(new FileOutputStream(zip));
-//
-//                ZipEntry entry = new ZipEntry(name);
-//                zos.putNextEntry(entry);
-//
-//                FileInputStream fis = null;
-//                try {
-//                    fis = new FileInputStream(file);
-//                    byte[] byteBuffer = new byte[1024];
-//                    int bytesRead = -1;
-//                    while ((bytesRead = fis.read(byteBuffer)) != -1) {
-//                        zos.write(byteBuffer, 0, bytesRead);
-//                    }
-//                    zos.flush();
-//                } finally {
-//                    try {
-//                        fis.close();
-//                    } catch (Exception e) {
-//                    }
-//                }
-//                zos.closeEntry();
-//
-//                zos.flush();
-//            } finally {
-//                try {
-//                    zos.close();
-//                } catch (Exception e) {
-//                }
-//            }
-//        }
-//    }
+    /**
+     * Move the source directory to the target directory
+     * @param source Source directory
+     * @param target Target directory
+     * @return True if the directory was moved successfully, false otherwise
+     */
+    public static boolean moveDirectory(String source, String target){
+        File sourceDirectory = new File(source);
+        File targetDirectory = new File(target);
+        return sourceDirectory.renameTo(new File(targetDirectory, sourceDirectory.getName()));
+    }
+
+    // Retrieve file using the gui at the home directory location
+    public static synchronized File getFileUsingGui(){
+        return getFileUsingGui(null, new File(System.getProperty("user.dir")));
+    }
+
+    // Retrieve file using the gui at the home directory location
+    public static synchronized File getFileUsingGui(String title){
+        return getFileUsingGui(title, new File(System.getProperty("user.dir")));
+    }
+
+    // Retrieve file using the gui at the directory location
+    public static synchronized File getFileUsingGui(String title, File directory){
+        // Open the file
+        File file = null;
+        JFileChooser fileChooser = new JFileChooser();
+        // Update the file chooser properties
+        if(title != null){
+            UIManager.put("FileChooser.openDialogTitleText", title);
+            SwingUtilities.updateComponentTreeUI(fileChooser);
+        }
+        fileChooser.setCurrentDirectory(directory);
+        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        int returnVal = fileChooser.showOpenDialog(null);
+        // Retrieve the file - if it was chosen
+        switch (returnVal) {
+            case JFileChooser.APPROVE_OPTION:
+                try{ file = fileChooser.getSelectedFile(); }
+                catch(Exception e){ e.printStackTrace(); }
+                break;
+            case JFileChooser.CANCEL_OPTION:
+                break;
+            case JFileChooser.ERROR_OPTION:
+                break;
+        }
+        return file;
+    }
 }

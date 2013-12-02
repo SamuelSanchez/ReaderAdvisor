@@ -54,7 +54,7 @@ public class Installer extends JFrame {
     // Current Installation State of the software
     private InstallationStatus currentState = InstallationStatus.INTRODUCTION;
     // Messages to display to the user
-    private static final String propertiesFile = "src/installer/messages.properties"; //TODO: Have to fix this path
+    private static final String propertiesFile = "src/installer/installer.properties"; //TODO: Have to fix this path
     private Properties messagesToDisplay = new Properties();
     // Installation Edition
     private enum EDITION { USER, DEVELOPER }
@@ -337,13 +337,13 @@ public class Installer extends JFrame {
         userEdition.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
-                if(e.getStateChange() == 1){ currentEdition = EDITION.USER; }
+                if(e.getStateChange() == ItemEvent.SELECTED){ currentEdition = EDITION.USER; }
             }
         });
         develEdition.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
-                if(e.getStateChange() == 1){ currentEdition = EDITION.DEVELOPER; }
+                if(e.getStateChange() == ItemEvent.SELECTED){ currentEdition = EDITION.DEVELOPER; }
             }
         });
         develEdition.setBackground(Color.WHITE);
@@ -421,7 +421,7 @@ public class Installer extends JFrame {
     }
 
     /*
-     * Create and return an costomizable JTextArea
+     * Create and return an customizable JTextArea
      */
     private JTextArea getTextArea(){
         JTextArea messageToDisplay = new JTextArea();
@@ -458,7 +458,7 @@ public class Installer extends JFrame {
     /*
      * Constructor - Set up all the Gui Components
      */
-    public Installer(){
+    private Installer(){
         setUpWindow();
         createLogoPanel();
         createMainPanel();
