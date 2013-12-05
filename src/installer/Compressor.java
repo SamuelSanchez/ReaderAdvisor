@@ -17,7 +17,6 @@ import java.util.Properties;
 public class Compressor {
     // Retrieve the properties for this program
     private Properties properties = new Properties();
-    private static final String propertiesFile = "installer.properties";
 
     // Run the Installer
     public static void run(){
@@ -56,10 +55,13 @@ public class Compressor {
     private void loadProperties(){
         // Load properties message
         try{
-            properties.load(new FileInputStream(propertiesFile));
+            if(InstallerUtils.isRunningFromJar()){
+                properties.load(InstallerUtils.classLoader.getResourceAsStream(InstallerUtils.propertiesFile));
+            }else{
+                properties.load(new FileInputStream(InstallerUtils.SCRIPT_DIRECTOR + InstallerUtils.propertiesFile));
+            }
         }catch(Exception e){
-            properties.setProperty("bin","readerAdvisorBin");
-            properties.setProperty("project","readerAdvisorProject");
+            e.printStackTrace();
         }
     }
 
