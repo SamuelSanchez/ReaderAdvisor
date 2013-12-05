@@ -6,9 +6,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -17,13 +15,25 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @SuppressWarnings("unused")
 public class InstallerUtils {
-
     // Properties
     private static final Integer ICON_WIDTH = 20;
     private static final Integer ICON_HEIGHT = 20;
-    private static final String SEPARATOR = System.getProperty("file.separator");
-    public static final String ICON_DIRECTOR = "icon" + SEPARATOR;
+    private static final String SEPARATOR = "/";
     public static final String NEW_LINE = System.getProperty("line.separator");
+    private static final String RELATIVE_DIR = "file:" + System.getProperty("user.dir") + SEPARATOR;
+    public static final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
+    // Hard-Coded Names
+    public static final String ICON_DIRECTOR = "icon_installer" + SEPARATOR;
+    public static final String SCRIPT_DIRECTOR = "script" + SEPARATOR;
+    public static final String propertiesFile = "installer.properties";
+
+    /*
+     * Return true if the current class is running from a jar file
+     */
+    public static boolean isRunningFromJar(){
+        return InstallerUtils.class.getResource("InstallerUtils.class").toString().startsWith("jar");
+    }
 
     /*
      * Create the icon for the GUI
@@ -39,17 +49,15 @@ public class InstallerUtils {
         ImageIcon imageIcon = null;
         // Do not proceed if the name is null
         if(name != null){
-            try{// Create the string and retrieve its URL
-                String urlStr = ICON_DIRECTOR + name;
-                java.net.URL imgURL = installer.Installer.class.getResource(urlStr);
-                if (imgURL != null) {
-                    Image img = new ImageIcon(imgURL).getImage();
+            try{
+                if(InstallerUtils.isRunningFromJar()){
+                    Image img = new ImageIcon(classLoader.getResource(ICON_DIRECTOR+name)).getImage();
                     imageIcon = new ImageIcon(img.getScaledInstance(width, height, Image.SCALE_SMOOTH), description);
-                } else {
-                    Image img = new ImageIcon(new java.net.URL(urlStr)).getImage();
+                }else{
+                    Image img = new ImageIcon(new java.net.URL(RELATIVE_DIR+ICON_DIRECTOR+name)).getImage();
                     imageIcon = new ImageIcon(img.getScaledInstance(width, height, Image.SCALE_SMOOTH), description);
                 }
-            } catch (MalformedURLException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }

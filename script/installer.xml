@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project basedir="../installer" default="default" name="Compressor and Installer">
+
+<description>
+Author : Samuel E. Sanchez
+	
+Project information to be disclosed soon.
+</description>
+
+
+    <!-- ********************************************************** -->
+    <!-- *                                                        * -->
+    <!-- *     Package Properties!!!!                             * -->
+    <!-- *                                                        * -->
+    <!-- ********************************************************** -->
+    <property name="package_name"     value="installer"/>
+    <property name="Jar_name"         value="${package_name}.jar"/>
+    <property name="Installer"        value="Installer"/>
+    <property name="Compressor"       value="Compressor"/>
+
+    <!-- ********************************************************** -->
+    <!-- *                                                        * -->
+    <!-- * Properties of the program files.                       * -->
+    <!-- *                                                        * -->
+    <!-- ********************************************************** -->
+    <property name="root"               value=".."/>
+    <property name="src_dir"            value="${root}/src"/>
+    <property name="classes_dir"		value="${src_dir}/${package_name}"/>
+
+   <tstamp>
+		<format property="NOW" pattern="yyyy-MM-dd HH:mm:ss" />
+   </tstamp>
+
+    <!-- ********************************************************** -->
+    <!-- *                                                        * -->
+    <!-- * Cleans all the code.                                   * -->
+    <!-- *                                                        * -->
+    <!-- ********************************************************** -->
+    <target name="clean" description="Cleans all the compiled and Jar files.">
+        <delete includeEmptyDirs="true">
+            <fileset dir="../installer" includes="**/*" />
+        </delete>
+    </target>
+
+    <!-- ********************************************************** -->
+    <!-- *                                                        * -->
+    <!-- * Compiles the Compressor code.                          * -->
+    <!-- *                                                        * -->
+    <!-- ********************************************************** -->
+    <target name="compressor_compile" description="Compiles all the code." depends="clean">
+	    <javac target="1.5" source="1.5" debug="true" deprecation="true" destdir="../installer" srcdir="${classes_dir}">
+            <compilerarg value="-Xlint"/>
+        </javac>
+        <copy todir="../installer">
+            <fileset dir="../script" includes="installer.properties"/>
+        </copy>
+        <mkdir dir="../installer/icon_installer"/>
+        <copy todir="../installer/icon_installer">
+            <fileset dir="../icon_installer" includes="**.png, **.ico"/>
+        </copy>
+    </target>
+
+    <!-- ********************************************************** -->
+    <!-- *                                                        * -->
+    <!-- * Runs the project demo.                                 * -->
+    <!-- *                                                        * -->
+    <!-- ********************************************************** -->
+    <target name="compressor_run" description="Runs the Compressor program." depends="compressor_compile">
+        <java classname="${package_name}.${Compressor}" classpath="." fork="yes" />
+    </target>
+
+    <!-- ********************************************************** -->
+    <!-- *                                                        * -->
+    <!-- * Compiles and creates a executable jar for the code.   * -->
+    <!-- *                                                        * -->
+    <!-- ********************************************************** -->
+    <target name="default" description="By Default only compiles the code." depends="compressor_run"/>
+
+    <!-- ********************************************************** -->
+    <!-- *                                                        * -->
+    <!-- * Creates a jar for all the code with the compiled code. * -->
+    <!-- *                                                        * -->
+    <!-- ********************************************************** -->
+    <target name="installer_createJar" description="Creates a runnable Jar excluding the Source code and build.xml" depends="compressor_run">
+        <jar destfile="${Jar_name}" basedir="../installer" >
+            <manifest>
+                <attribute name="Main-Class" value="${package_name}.${Installer}" />
+            </manifest>
+        </jar>
+        <delete includeEmptyDirs="true">
+            <fileset dir="../installer" includes="**/*.zip"/>
+        </delete>
+        <delete dir="../installer/icon_installer" />
+        <delete dir="../installer/${package_name}" />
+        <delete file="../installer/installer.properties" />
+    </target>
+
+    <!-- ********************************************************** -->
+    <!-- *                                                        * -->
+    <!-- * Runs the project demo.                                 * -->
+    <!-- *                                                        * -->
+    <!-- ********************************************************** -->
+    <target name="installer_run" description="Runs the Installer program.." depends="compressor_run">
+        <java classname="${package_name}.${Installer}" classpath="." fork="yes" />
+    </target>
+
+
+    <!-- ********************************************************** -->
+    <!-- *                                                        * -->
+    <!-- * Runs the Project Jar Demo.                             * -->
+    <!-- *                                                        * -->
+    <!-- ********************************************************** -->
+    <target name="installer_runJar" description="Runs the Project Jar Demo.">
+        <java jar="${Jar_name}" fork="true" />
+    </target>
+
+</project>

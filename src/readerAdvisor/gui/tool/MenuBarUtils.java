@@ -114,11 +114,12 @@ public class MenuBarUtils {
             return new ImageIcon(img.getScaledInstance(w, h, Image.SCALE_SMOOTH), description);
         } else {
             try {
-                imgURL = new java.net.URL(GlobalProperties.getInstance().getProperty("EnvironmentUtils.iconDirectory") + name);
+                String urlStr = "file:" + System.getProperty("user.dir") + EnvironmentUtils.ICON_DIRECTORY + name;
+                imgURL = new java.net.URL(urlStr);
                 Image img = new ImageIcon(imgURL).getImage();
                 return new ImageIcon(img.getScaledInstance(w, h, Image.SCALE_SMOOTH), description);
             } catch (MalformedURLException e) {
-                System.err.println("Couldn't find file: " + GlobalProperties.getInstance().getProperty("EnvironmentUtils.iconDirectory") + name);
+                //System.err.println("Couldn't find file: " + GlobalProperties.getInstance().getProperty("EnvironmentUtils.iconDirectory") + name);
                 return null;
             }
         }

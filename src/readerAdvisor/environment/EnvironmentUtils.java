@@ -12,7 +12,7 @@ public class EnvironmentUtils {
     public static final String NEW_LINE = System.getProperty("line.separator");
     public static final String SPACE = "\\s+";
     public static final String CURRENT_DIRECTORY = System.getProperty("user.dir");
-    public static final String ICON_DIRECTORY =  "/icon/";
+    public static final String ICON_DIRECTORY =  SEPARATOR + "icon" + SEPARATOR;
 
     // Environment Variables
     public static final String PROJECT_NAME = "Reader Advisor";

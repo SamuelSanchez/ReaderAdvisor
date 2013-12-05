@@ -17,7 +17,7 @@ import java.util.Properties;
 public class Compressor {
     // Retrieve the properties for this program
     private Properties properties = new Properties();
-    private static final String propertiesFile = "src/installer/installer.properties"; //TODO: Have to fix this path
+    private static final String propertiesFile = "installer.properties";
 
     // Run the Installer
     public static void run(){
@@ -31,16 +31,16 @@ public class Compressor {
     public void execute(){
         // ---------------- Load the properties ---------------- //
         loadProperties();
-        // ---------------- Zip the bin directory ---------------- //
-        // Select the executable directory to be zipped
-        File binDir = InstallerUtils.getFileUsingGui("Choose the Executable directory");
-        // Zip the bin directory
-        String binFileName = ZipUtils.createZip(binDir, properties.getProperty("bin"));
         // ---------------- Zip the src directory ---------------- //
         // Select the source directory to be zipped
         File srcDir = InstallerUtils.getFileUsingGui("Choose the Project directory");
         // Zip the bin directory
         String sourceFileName = ZipUtils.createZip(srcDir, properties.getProperty("project"));
+        // ---------------- Zip the bin directory ---------------- //
+        // Select the executable directory to be zipped
+        File binDir = InstallerUtils.getFileUsingGui("Choose the Executable directory");
+        // Zip the bin directory
+        String binFileName = ZipUtils.createZip(binDir, properties.getProperty("bin"));
         // ---------------- Move the directories ---------------- //
         // Select the source directory where the zips will be moved
         File target = InstallerUtils.getFileUsingGui("Choose Destination directory");

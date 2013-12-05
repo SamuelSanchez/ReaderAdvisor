@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project basedir="../exec" default="default" name="Web Retrieval">
+<project basedir="../exec" default="default" name="Reader Advisor">
 
 <description>
 Author : Samuel E. Sanchez
@@ -62,8 +62,8 @@ Project information to be disclosed soon.
         <delete file="../exec/software.properties" />
         <delete file="../exec/run.bat" />
         <delete file="../exec/run.sh" />
-        <delete file="${Jar_name}" />
-        <delete dir="${package_name}" />
+        <delete file="../exec/${Jar_name}" />
+        <delete dir="../exec/${package_name}" />
         <delete dir="../exec/icon" />
         <delete dir="../exec/lib" />
         <delete dir="../exec/config" />

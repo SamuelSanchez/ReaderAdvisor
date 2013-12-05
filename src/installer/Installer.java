@@ -54,7 +54,6 @@ public class Installer extends JFrame {
     // Current Installation State of the software
     private InstallationStatus currentState = InstallationStatus.INTRODUCTION;
     // Messages to display to the user
-    private static final String propertiesFile = "src/installer/installer.properties"; //TODO: Have to fix this path
     private Properties messagesToDisplay = new Properties();
     // Installation Edition
     private enum EDITION { USER, DEVELOPER }
@@ -470,10 +469,13 @@ public class Installer extends JFrame {
         this.setContentPane(container);
         // Load properties message
         try{
-            messagesToDisplay.load(new FileInputStream(propertiesFile));
+            if(InstallerUtils.isRunningFromJar()){
+                messagesToDisplay.load(InstallerUtils.classLoader.getResourceAsStream(InstallerUtils.propertiesFile));
+            }else{
+                messagesToDisplay.load(new FileInputStream(InstallerUtils.SCRIPT_DIRECTOR + InstallerUtils.propertiesFile));
+            }
         }catch(Exception e){
-            messagesToDisplay.setProperty("Introduction","Click next to proceed the Reader Advisor installtion...");
-            messagesToDisplay.setProperty("Installed","You have successfully installed Reader Advisor!");
+            e.printStackTrace();
         }
     }
 
