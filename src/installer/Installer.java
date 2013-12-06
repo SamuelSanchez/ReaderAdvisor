@@ -11,6 +11,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
@@ -26,7 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Installer extends JFrame {
     // Vector that stores all the files created by the application
     // This is stored for rollback purposes
-    private Vector<File> filesCreated = new Vector<File>();
+    private Vector<String> filesCreated = new Vector<String>();
     // Directory where the files will be installed
     private volatile File installationDirectory = new File(System.getProperty("user.dir"));
     // Rollback progress bar
@@ -54,7 +55,7 @@ public class Installer extends JFrame {
     // Current Installation State of the software
     private InstallationStatus currentState = InstallationStatus.INTRODUCTION;
     // Messages to display to the user
-    private Properties messagesToDisplay = new Properties();
+    private Properties properties = new Properties();
     // Installation Edition
     private enum EDITION { USER, DEVELOPER }
     private EDITION currentEdition = EDITION.USER;
@@ -129,10 +130,10 @@ public class Installer extends JFrame {
         // Create the current State of the software
         // HACK : Fix the size of the JTextArea - BUG: The size of the JTextArea is not being set properly
         if(runOnce){
-            userActionPanel.add(getTextAreaMessage(messagesToDisplay.get("Introduction").toString(),321,235));
+            userActionPanel.add(getTextAreaMessage(properties.get("Introduction").toString(), 321, 235));
             runOnce = false;
         }else{
-            userActionPanel.add(getTextAreaMessage(messagesToDisplay.get("Introduction").toString()));
+            userActionPanel.add(getTextAreaMessage(properties.get("Introduction").toString()));
         }
         userActionPanel.repaint();
         // Update the action panel
@@ -150,7 +151,7 @@ public class Installer extends JFrame {
         // Remove all the contents from this window
         userActionPanel.removeAll();
         // Create the current Panel of the software
-        userActionPanel.add(getTextAreaMessage(messagesToDisplay.get("InstallationDirectory").toString()));
+        userActionPanel.add(getTextAreaMessage(properties.get("InstallationDirectory").toString()));
         // Create the installation directory panel
         JPanel installationDirectoryPanel = new JPanel(new GridLayout(2,1));
         installationDirectoryPanel.add(new JLabel("Directory:"));
@@ -178,10 +179,28 @@ public class Installer extends JFrame {
         backButton.setVisible(false);
         nextButton.setVisible(false);
         try{
+            InputStream editionToInstall = null;
+            // Edition to install
+            switch (currentEdition){
+                case USER:
+                    editionToInstall = (InstallerUtils.isRunningFromJar()?
+                        InstallerUtils.classLoader.getResourceAsStream(properties.getProperty("bin"))
+                        :
+                        new FileInputStream(new File(properties.getProperty("zipDirectory") + properties.getProperty("bin")))
+                    );
+                    break;
+                case DEVELOPER:
+                    editionToInstall = (InstallerUtils.isRunningFromJar()?
+                        InstallerUtils.classLoader.getResourceAsStream(properties.getProperty("project"))
+                        :
+                        new FileInputStream(new File(properties.getProperty("zipDirectory") + properties.getProperty("project")))
+                    );
+                    break;
+            }
             // Create the Text Area where the messages will be displayed
             JTextArea textArea = getTextArea();
             // Create the worker thread that will perform the installation
-            installationWorker = new InstallationWorker(installationDirectory,textArea,filesCreated);
+            installationWorker = new InstallationWorker(installationDirectory,editionToInstall,textArea,filesCreated);
             JPanel installationPanel = getInstallationPanel(installationWorker);
             // Don't display the border
             JScrollPane scrollPane = new JScrollPane(textArea);
@@ -214,17 +233,17 @@ public class Installer extends JFrame {
         userActionPanel.removeAll();
         backNextCancelPanel.removeAll();
         // Provide a link for the user to learn how to use the software
-        JLabel readMe = InstallerUtils.getHyperlinkLabel(messagesToDisplay.get("ReadMe").toString(),"Read me");
+        JLabel readMe = InstallerUtils.getHyperlinkLabel(properties.get("ReadMe").toString(), "Read me");
         readMe.setToolTipText("Learn more about this software");
         userActionPanel.add(readMe);
         // Provide a link for the developer to learn how to setup this software in IntelliJ
         if(currentEdition.equals(EDITION.DEVELOPER)){
-            JLabel intelliJ = InstallerUtils.getHyperlinkLabel(messagesToDisplay.get("IntelliJSetup").toString(),"IntelliJ Setup");
+            JLabel intelliJ = InstallerUtils.getHyperlinkLabel(properties.get("IntelliJSetup").toString(),"IntelliJ Setup");
             intelliJ.setToolTipText("Learn how to develop this software using IntelliJ");
             userActionPanel.add(intelliJ);
         }
         // Create the current State of the software
-        userActionPanel.add(getTextAreaMessage(messagesToDisplay.get("Installed").toString()));
+        userActionPanel.add(getTextAreaMessage(properties.get("Installed").toString()));
         // Create the finish button
         JButton installationCompleted = new JButton("Finished!");
         installationCompleted.addActionListener(new ActionListener() {
@@ -245,9 +264,9 @@ public class Installer extends JFrame {
      */
     private void rollback(){
         System.out.println("Rolling back...");// TODO: Delete this line
-        for(File file : filesCreated){
+        for(String file : filesCreated){
             try{
-                InstallerUtils.deleteFile(file);
+                //InstallerUtils.deleteFile(file);
             }catch (Exception e){
                 e.printStackTrace();
             }
@@ -470,9 +489,9 @@ public class Installer extends JFrame {
         // Load properties message
         try{
             if(InstallerUtils.isRunningFromJar()){
-                messagesToDisplay.load(InstallerUtils.classLoader.getResourceAsStream(InstallerUtils.propertiesFile));
+                properties.load(InstallerUtils.classLoader.getResourceAsStream(InstallerUtils.propertiesFile));
             }else{
-                messagesToDisplay.load(new FileInputStream(InstallerUtils.SCRIPT_DIRECTOR + InstallerUtils.propertiesFile));
+                properties.load(new FileInputStream(InstallerUtils.SCRIPT_DIRECTOR + InstallerUtils.propertiesFile));
             }
         }catch(Exception e){
             e.printStackTrace();

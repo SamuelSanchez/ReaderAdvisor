@@ -58,7 +58,11 @@ public class Compressor {
             if(InstallerUtils.isRunningFromJar()){
                 properties.load(InstallerUtils.classLoader.getResourceAsStream(InstallerUtils.propertiesFile));
             }else{
-                properties.load(new FileInputStream(InstallerUtils.SCRIPT_DIRECTOR + InstallerUtils.propertiesFile));
+                try{
+                    properties.load(new FileInputStream(InstallerUtils.SCRIPT_DIRECTOR + InstallerUtils.propertiesFile));
+                }catch (Exception e){
+                    properties.load(new FileInputStream(InstallerUtils.propertiesFile));
+                }
             }
         }catch(Exception e){
             e.printStackTrace();

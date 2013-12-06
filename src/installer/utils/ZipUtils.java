@@ -11,12 +11,7 @@ import java.util.zip.ZipOutputStream;
  * Creates and Extracts Zip directories
  */
 @SuppressWarnings("unused")
-// TODO: Make this Utilities class into two classes 'ZipCreator' and 'ZipExtractor'
-// TODO: There are files that should not be zipped such the Git and IntelliJ files
 public class ZipUtils {
-    // Variables
-    private static final int  BUFFER_SIZE = 4096;
-
     // ----------------------- ZIPPING FILE ----------------------- //
     /***
      * Create zipfile to output directory with complete directory structure
@@ -68,7 +63,7 @@ public class ZipUtils {
             zipName = directoryToZip.getName();
         }
         // Store the file name
-        String fileName = zipName + ".zip";
+        String fileName = zipName;
         // Create the zip file
         FileOutputStream fos = new FileOutputStream(fileName);
         ZipOutputStream zos = new ZipOutputStream(fos);
@@ -87,6 +82,7 @@ public class ZipUtils {
      * Add files to the zip
      */
     private static void addToZip(File directoryToZip, File file, ZipOutputStream zos) throws IOException {
+        final int  BUFFER_SIZE = 4096;
         FileInputStream fis = new FileInputStream(file);
         // we want the zipEntry's path to be a relative path that is relative
         // to the directory being zipped, so chop off the rest of the path
@@ -111,8 +107,25 @@ public class ZipUtils {
      */
     public static boolean extract(File zipfile, File outputDirectory) {
         boolean isSuccessful = false;
+        try{
+            isSuccessful = extract(new FileInputStream(zipfile),outputDirectory);
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+        return isSuccessful;
+    }
+
+
+    /***
+     * Extract zipfile to outdir with complete directory structure
+     * @param zipfile Input .zip file
+     * @param outputDirectory Output directory
+     */
+
+    public static boolean extract(InputStream zipfile, File outputDirectory) {
+        boolean isSuccessful = false;
         try {
-            ZipInputStream zin = new ZipInputStream(new FileInputStream(zipfile));
+            ZipInputStream zin = new ZipInputStream(zipfile);
             ZipEntry entry;
             String name, dir;
             while ((entry = zin.getNextEntry()) != null) {
@@ -142,6 +155,7 @@ public class ZipUtils {
         return isSuccessful;
     }
 
+
     /*
      * Extract the zipped file name in the output directory
      * in - Zip file
@@ -149,6 +163,7 @@ public class ZipUtils {
      * name - name of the file to extract
      */
     private static void extractFile(ZipInputStream in, File outputDirectory, String name) throws IOException {
+        final int  BUFFER_SIZE = 4096;
         byte[] buffer = new byte[BUFFER_SIZE];
         BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(new File(outputDirectory,name)));
         int count;
