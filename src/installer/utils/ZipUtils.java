@@ -82,7 +82,7 @@ public class ZipUtils {
      * Add files to the zip
      */
     private static void addToZip(File directoryToZip, File file, ZipOutputStream zos) throws IOException {
-        final int  BUFFER_SIZE = 4096;
+        final int  BUFFER_SIZE = 1024;
         FileInputStream fis = new FileInputStream(file);
         // we want the zipEntry's path to be a relative path that is relative
         // to the directory being zipped, so chop off the rest of the path
@@ -163,7 +163,7 @@ public class ZipUtils {
      * name - name of the file to extract
      */
     private static void extractFile(ZipInputStream in, File outputDirectory, String name) throws IOException {
-        final int  BUFFER_SIZE = 4096;
+        final int  BUFFER_SIZE = 1024;
         byte[] buffer = new byte[BUFFER_SIZE];
         BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(new File(outputDirectory,name)));
         int count;

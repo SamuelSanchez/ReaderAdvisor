@@ -1,19 +1,10 @@
 package readerAdvisor.environment;
 
-import readerAdvisor.utils.NumberUtils;
-
 import java.io.FileInputStream;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-/**
- * Created with IntelliJ IDEA.
- * User: Eduardo
- * Date: 7/12/13
- * Time: 12:05 AM
- * To change this template use File | Settings | File Templates.
- */
 public class GlobalProperties {
     // TODO : Pass all hardcoded folder names into this path
     private static volatile GlobalProperties globalProperties = new GlobalProperties();

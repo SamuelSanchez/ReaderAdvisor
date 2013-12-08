@@ -36,9 +36,9 @@ public class AudioPlayer implements LineListener {
 	 * 
 	 * @param audioFilePath
 	 *            Path of the audio file.
-	 * @throws IOException
-	 * @throws UnsupportedAudioFileException
-	 * @throws LineUnavailableException
+	 * @throws java.io.IOException
+	 * @throws javax.sound.sampled.UnsupportedAudioFileException
+	 * @throws javax.sound.sampled.LineUnavailableException
 	 */
 	public void load(String audioFilePath)
 			throws UnsupportedAudioFileException, IOException,
@@ -114,9 +114,9 @@ public class AudioPlayer implements LineListener {
 	/**
 	 * Play a given audio file.
 	 * 
-	 * @throws IOException
-	 * @throws UnsupportedAudioFileException
-	 * @throws LineUnavailableException
+	 * @throws java.io.IOException
+	 * @throws javax.sound.sampled.UnsupportedAudioFileException
+	 * @throws javax.sound.sampled.LineUnavailableException
 	 */
 	public void play() throws IOException {
 

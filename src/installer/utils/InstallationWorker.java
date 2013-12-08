@@ -47,31 +47,30 @@ public class InstallationWorker extends SwingWorker<Integer,String> {
     @Override
     protected Integer doInBackground() throws Exception {
         // Unzip the file
-        ZipUtils.extract(fileToInstall,installationDirectory);
-//        UncompressZipFile uncompressZipFile = new UncompressZipFile(fileToInstall,installationDirectory);
-//        // Progress - Number of files that the software has installed
+        UncompressZipFile uncompressZipFile = new UncompressZipFile(fileToInstall,installationDirectory);
+        // Number of files that the software has installed
         int installedFilesCount = 0;
-//        // Total number of files
-//        int totalNumberOfFilesToInstall = uncompressZipFile.countFiles();
-//        // Display installing message
-//        InstallationWorker.failIfInterrupted();
-//        publish("Installing...");
-//        for(; installedFilesCount < totalNumberOfFilesToInstall; installedFilesCount++){
-//            try{
-//                // Install the files
-//                String fileName = uncompressZipFile.unzipNextEntry();
-//                if(fileName != null){
-//                    filesInstalled.add(fileName);
-//                    publish(fileName);
-//                }
-//                // Check if the user has cancel the install
-//                InstallationWorker.failIfInterrupted();
-//                // Update the progress
-//                setProgress((installedFilesCount+1) * 100 / totalNumberOfFilesToInstall);
-//            }catch(Exception e){
-//                e.printStackTrace();
-//            }
-//        }
+        // Total number of files
+        int totalNumberOfFilesToInstall = uncompressZipFile.countFiles();
+        // Display installing message
+        InstallationWorker.failIfInterrupted();
+        publish("Installing...");
+        for(; installedFilesCount < totalNumberOfFilesToInstall; installedFilesCount++){
+            try{
+                // Install the files
+                String fileName = uncompressZipFile.unzipNextEntry();
+                if(fileName != null){
+                    filesInstalled.add(fileName);
+                    publish(fileName);
+                }
+                // Check if the user has cancel the install
+                InstallationWorker.failIfInterrupted();
+                // Update the progress
+                setProgress((installedFilesCount+1) * 100 / totalNumberOfFilesToInstall);
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+        }
         // Return the number of files installed
         return installedFilesCount;
     }

@@ -1,22 +1,12 @@
 package readerAdvisor.gui.tool;
 
-import readerAdvisor.utils.NumberUtils;
-
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
-/**
- * Created with IntelliJ IDEA.
- * User: Eduardo
- * Date: 10/15/13
- * Time: 11:11 PM
- * To change this template use File | Settings | File Templates.
- */
 //USELESS CLASS
 @Deprecated
+@SuppressWarnings("unused")
 public class SpinnerNumberListener implements KeyListener {
     protected JSpinner spinner;
     public static final Integer DEFAULT_NUMBER = 5;
@@ -27,7 +17,7 @@ public class SpinnerNumberListener implements KeyListener {
     }
 
     @Deprecated
-    private void setEditorEnable(boolean enable){
+    public void setEditorEnable(boolean enable){
         spinner.setEnabled(enable);
         if (spinner.getEditor() instanceof JSpinner.DefaultEditor) {
             JSpinner.DefaultEditor editor = (JSpinner.DefaultEditor) spinner.getEditor();
@@ -38,12 +28,12 @@ public class SpinnerNumberListener implements KeyListener {
 
     @Override
     public void keyTyped(KeyEvent e) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        // Do nothing
     }
 
     @Override
     public void keyPressed(KeyEvent e) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        // Do nothing
     }
 
     @Override

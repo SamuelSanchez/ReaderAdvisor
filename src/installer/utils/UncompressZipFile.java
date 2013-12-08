@@ -1,7 +1,6 @@
 package installer.utils;
 
 import java.io.*;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -10,27 +9,27 @@ import java.util.zip.ZipInputStream;
 @SuppressWarnings("unused")
 public class UncompressZipFile {
 
-    private List<ZipEntry> zipEntryList = new LinkedList<ZipEntry>();
-    private Iterator<ZipEntry> iterator;
-    private InputStream zipFile;
+    private List<String> zipEntryList = new LinkedList<String>();
     private File outputDirectory;
     private ZipInputStream zin;
 
     public UncompressZipFile(InputStream zipFile) throws IOException{
-        this.zipFile = zipFile;
-        // Initialize this class
-        init();
+        // Clone the input stream and retrieve two clones
+        List<InputStream> inputStreamList = InstallerUtils.cloneInputStream(zipFile);
+        // First clone to unzip the files
+        zin = new ZipInputStream(inputStreamList.get(0));
+        // Second clone to retrieve the count information of this zip
+        init(inputStreamList.get(1));
     }
 
     public UncompressZipFile(InputStream zipFile, File outputDirectory) throws IOException{
-        this.zipFile = zipFile;
+        // Clone the input stream and retrieve two clones
+        List<InputStream> inputStreamList = InstallerUtils.cloneInputStream(zipFile);
+        // First clone to unzip the files
+        zin = new ZipInputStream(inputStreamList.get(0));
         this.outputDirectory = outputDirectory;
-        // Initialize this class
-        init();
-    }
-
-    public void setZipFile(InputStream zipFile){
-        this.zipFile = zipFile;
+        // Second clone to retrieve the count information of this zip
+        init(inputStreamList.get(1));
     }
 
     public void setOutputDirectory(File outputDirectory){
@@ -42,16 +41,14 @@ public class UncompressZipFile {
      * Read all the files in this zip
      */
 
-    private void init() throws IOException {
-        zin = new ZipInputStream(zipFile);
+    private void init(InputStream inputStream) throws IOException {
+        ZipInputStream _zin = new ZipInputStream(inputStream);
         ZipEntry entry;
         // Store all the files
-        while ((entry = zin.getNextEntry()) != null) {
-            zipEntryList.add(entry);
+        while ((entry = _zin.getNextEntry()) != null) {
+            zipEntryList.add(entry.getName());
         }
-        // Retrieve iterator
-        iterator = zipEntryList.iterator();
-        //zin.close();
+        _zin.close();
     }
 
 
@@ -71,12 +68,7 @@ public class UncompressZipFile {
      */
 
     public synchronized List<String> listFiles(){
-        List<String> list = new LinkedList<String>();
-        // Retrieve the name of the zip entries
-        for(ZipEntry zipEntry : zipEntryList){
-            list.add(zipEntry.getName());
-        }
-        return list;
+        return zipEntryList;
     }
 
     /***
@@ -86,23 +78,21 @@ public class UncompressZipFile {
 
     public synchronized String unzipNextEntry() throws IOException {
         String fileName = null;
+        ZipEntry entry;
         // Do not proceed if there's not file to unzip
-        if(iterator.hasNext()){
-            ZipEntry entry = iterator.next();
-            if (entry != null) {
-                // Update the name of the file
-                fileName = entry.getName();
-                // If the file is a directory then create it
-                if (entry.isDirectory()) {
-                    mkdirs(outputDirectory,fileName);
+        if((entry = zin.getNextEntry()) != null){
+            // Update the name of the file
+            fileName = entry.getName();
+            // If the file is a directory then create it
+            if (entry.isDirectory()) {
+                mkdirs(outputDirectory,fileName);
+            }
+            else{
+                String dir = dirpart(fileName);
+                if (dir != null) {
+                    mkdirs(outputDirectory,dir);
                 }
-                else{
-                    String dir = dirpart(fileName);
-                    if (dir != null) {
-                        mkdirs(outputDirectory,dir);
-                    }
-                    extractFile(zin, outputDirectory, fileName);
-                }
+                extractFile(zin, outputDirectory, fileName);
             }
         }
         return fileName;
@@ -115,7 +105,7 @@ public class UncompressZipFile {
      * name - name of the file to extract
      */
     private static void extractFile(ZipInputStream in, File outputDirectory, String name) throws IOException {
-        final int  BUFFER_SIZE = 4096;
+        final int  BUFFER_SIZE = 1024;
         byte[] buffer = new byte[BUFFER_SIZE];
         BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(new File(outputDirectory,name)));
         int count;

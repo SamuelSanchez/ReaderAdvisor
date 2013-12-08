@@ -3,6 +3,7 @@ package installer;
 import installer.utils.InstallationStatus;
 import installer.utils.InstallationWorker;
 import installer.utils.InstallerUtils;
+import installer.utils.Rollback;
 
 import javax.swing.*;
 import java.awt.*;
@@ -30,8 +31,6 @@ public class Installer extends JFrame {
     private Vector<String> filesCreated = new Vector<String>();
     // Directory where the files will be installed
     private volatile File installationDirectory = new File(System.getProperty("user.dir"));
-    // Rollback progress bar
-    private volatile JProgressBar rollbackProgressBar = new JProgressBar();
     // Installation Worker thread - Installs the directories
     private InstallationWorker installationWorker = null;
     // Boolean that states whether the installation has completed or not
@@ -165,6 +164,17 @@ public class Installer extends JFrame {
         nextButton.setEnabled(true);
         // Update the Gui to display the current state of the software installation
         userActionPanel.updateUI();
+        // Display warning message if the user is not running this program from a jar
+        // In order to test the installer the files to be extracted must exists
+        if(!InstallerUtils.isRunningFromJar()){
+            JOptionPane.showMessageDialog(this,
+                    "The Installer is NOT running from a Jar!" + InstallerUtils.NEW_LINE +
+                    "Make sure to have these files under the '" + properties.get("zipDirectory") + "' directory:" + InstallerUtils.NEW_LINE +
+                    " - " + properties.get("bin") + InstallerUtils.NEW_LINE +
+                    " - " + properties.get("project"),
+                    "Installer Warning",
+                    JOptionPane.WARNING_MESSAGE);
+        }
     }
 
     /*
@@ -233,12 +243,12 @@ public class Installer extends JFrame {
         userActionPanel.removeAll();
         backNextCancelPanel.removeAll();
         // Provide a link for the user to learn how to use the software
-        JLabel readMe = InstallerUtils.getHyperlinkLabel(properties.get("ReadMe").toString(), "Read me");
+        JLabel readMe = InstallerUtils.getHyperlinkLabel(properties.get("ReadMe_URL").toString(), "Read me");
         readMe.setToolTipText("Learn more about this software");
         userActionPanel.add(readMe);
         // Provide a link for the developer to learn how to setup this software in IntelliJ
         if(currentEdition.equals(EDITION.DEVELOPER)){
-            JLabel intelliJ = InstallerUtils.getHyperlinkLabel(properties.get("IntelliJSetup").toString(),"IntelliJ Setup");
+            JLabel intelliJ = InstallerUtils.getHyperlinkLabel(properties.get("IntelliJSetup_URL").toString(),"IntelliJ Setup");
             intelliJ.setToolTipText("Learn how to develop this software using IntelliJ");
             userActionPanel.add(intelliJ);
         }
@@ -263,13 +273,10 @@ public class Installer extends JFrame {
      * Simply delete all directories and files created by the installer
      */
     private void rollback(){
-        System.out.println("Rolling back...");// TODO: Delete this line
-        for(String file : filesCreated){
-            try{
-                //InstallerUtils.deleteFile(file);
-            }catch (Exception e){
-                e.printStackTrace();
-            }
+        try{
+            Rollback.INSTANCE.execute(installationDirectory);
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 
@@ -395,7 +402,6 @@ public class Installer extends JFrame {
             public void propertyChange(final PropertyChangeEvent event) {
                 String propertyName = event.getPropertyName();
                 if(propertyName.equalsIgnoreCase("progress")){
-                    System.out.println("PROGRESS");
                     installationDirectoryProgress.setIndeterminate(false);
                     installationDirectoryProgress.setValue((Integer) event.getNewValue());
                     // Update the Tool Tip dynamically when mouse is not in motion
@@ -412,19 +418,14 @@ public class Installer extends JFrame {
                                 InstallerUtils.updateToolTipMessageDynamically(installationDirectoryProgress);
                                 // If the installation is
                                 if(!installationWorker.isCancelled()){
-                                    System.out.println("DONE");
                                     // At this point the installation has been complete successfully
                                     isInstallationCompleted.set(true);
                                     // Don't allow the user to go backwards but automatically go to the Complete message
                                     executeNextState();
                                 }
-                                else{
-                                    System.out.println("CANCELLED");
-                                }
                                 break;
                             case STARTED:
                             case PENDING:
-                                System.out.println("PENDING");
                                 installationDirectoryProgress.setVisible(true);
                                 installationDirectoryProgress.setIndeterminate(true);
                                 break;
@@ -617,7 +618,7 @@ public class Installer extends JFrame {
                 // Perform rollback if the installation has not complete successfully
                 if (!isInstallationCompleted.get()) {  rollback(); }
                 // Exit the program
-                System.exit(0);
+                //System.exit(0);
             }
         });
         // Add the panel to the GUI

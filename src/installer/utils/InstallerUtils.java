@@ -4,9 +4,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -64,7 +64,8 @@ public class InstallerUtils {
         return imageIcon;
     }
 
-    /*
+    /**
+     * WARNING: This functionality is very dangerous is not given the proper directory
      * Delete the File - If it's a directory then delete it recursively
      */
     public static void deleteFile(File file) throws IOException {
@@ -217,5 +218,42 @@ public class InstallerUtils {
                 break;
         }
         return file;
+    }
+
+    /**
+     *  Clone an Input stream. It clones the input stream into a ByteArrayOutputStream.
+     *  Then it will create a list of two new input streams.
+     *  @param  inputStream Input Stream to be cloned. This input stream will not be reusable afterwards.
+     *  @return Cloned Input Stream.
+     */
+    public static synchronized java.util.List<InputStream> cloneInputStream(InputStream inputStream) throws IOException {
+        return cloneInputStream(inputStream,2);
+    }
+
+    /**
+     *  Clone an Input stream. It clones the input stream into a ByteArrayOutputStream.
+     *  Then it will create a list of new input streams.
+     *  @param  inputStream Input Stream to be cloned. This input stream will not be reusable afterwards.
+     *  @param copies   Number of copies of this input stream. Ideally to request two copies since the input stream provided is unusable.
+     *  @return Cloned Input Stream.
+     */
+    public static synchronized java.util.List<InputStream> cloneInputStream(InputStream inputStream, int copies) throws IOException {
+        java.util.List<InputStream> list = new LinkedList<InputStream>();
+        if(inputStream != null && copies > 0){
+            final int  BUFFER_SIZE = 1024;
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            byte[] buffer = new byte[BUFFER_SIZE];
+            int length;
+            // Copy all the bytes into the byte array output stream
+            while( (length = inputStream.read(buffer)) > -1 ){
+                byteArrayOutputStream.write(buffer, 0, length);
+            }
+            byteArrayOutputStream.flush();
+            // Create the number of copies of this input stream
+            for(int i = 0; i < copies; i++){
+                list.add(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()));
+            }
+        }
+        return list;
     }
 }

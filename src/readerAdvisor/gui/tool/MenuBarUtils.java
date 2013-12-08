@@ -1,8 +1,6 @@
 package readerAdvisor.gui.tool;
 
-import readerAdvisor.MainApp;
 import readerAdvisor.environment.EnvironmentUtils;
-import readerAdvisor.environment.GlobalProperties;
 import readerAdvisor.file.FileUtils;
 
 import javax.swing.*;
