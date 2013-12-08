@@ -3,7 +3,6 @@ package installer;
 import installer.utils.InstallationStatus;
 import installer.utils.InstallationWorker;
 import installer.utils.InstallerUtils;
-import installer.utils.Rollback;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,6 +11,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -181,7 +181,7 @@ public class Installer extends JFrame {
      * Installing Software
      */
     private void installingSoftware(){
-        Dimension preferredSize = new Dimension(Math.abs(userActionPanel.getWidth())- TRIM_WIDTH,Math.abs(userActionPanel.getHeight())- TRIM_HEIGHT);
+        final Dimension preferredSize = new Dimension(Math.abs(userActionPanel.getWidth())- TRIM_WIDTH,Math.abs(userActionPanel.getHeight())- TRIM_HEIGHT);
         userActionPanel.setBorder(BorderFactory.createTitledBorder(currentState.getStatusCode()));
         // Remove all the contents from this window
         userActionPanel.removeAll();
@@ -189,24 +189,7 @@ public class Installer extends JFrame {
         backButton.setVisible(false);
         nextButton.setVisible(false);
         try{
-            InputStream editionToInstall = null;
-            // Edition to install
-            switch (currentEdition){
-                case USER:
-                    editionToInstall = (InstallerUtils.isRunningFromJar()?
-                        InstallerUtils.classLoader.getResourceAsStream(properties.getProperty("bin"))
-                        :
-                        new FileInputStream(new File(properties.getProperty("zipDirectory") + properties.getProperty("bin")))
-                    );
-                    break;
-                case DEVELOPER:
-                    editionToInstall = (InstallerUtils.isRunningFromJar()?
-                        InstallerUtils.classLoader.getResourceAsStream(properties.getProperty("project"))
-                        :
-                        new FileInputStream(new File(properties.getProperty("zipDirectory") + properties.getProperty("project")))
-                    );
-                    break;
-            }
+            InputStream editionToInstall = getEditionToInstall();
             // Create the Text Area where the messages will be displayed
             JTextArea textArea = getTextArea();
             // Create the worker thread that will perform the installation
@@ -272,12 +255,42 @@ public class Installer extends JFrame {
      * Rollback all installation perform by this program
      * Simply delete all directories and files created by the installer
      */
-    private void rollback(){
-        try{
-            Rollback.INSTANCE.execute(installationDirectory);
-        }catch (Exception e){
-            e.printStackTrace();
+    private synchronized void rollback(){
+        // Do not show this window
+        this.setVisible(false);
+        JOptionPane.showMessageDialog(null,"Rolling Back Installation ...", "Software Rollback",JOptionPane.WARNING_MESSAGE);
+        // WARNING : Provide the right directory - otherwise this program will delete unwanted files
+        if(installationDirectory != null){
+            try{
+                // Delete the files recursively
+                InstallerUtils.deleteFile(installationDirectory);
+            }catch(IOException e){
+                e.printStackTrace();
+            }
         }
+    }
+
+    // Returns the current edition to install
+    public InputStream getEditionToInstall() throws IOException{
+        InputStream editionToInstall = null;
+        // Edition to install
+        switch (currentEdition){
+            case USER:
+                editionToInstall = (InstallerUtils.isRunningFromJar()?
+                        InstallerUtils.classLoader.getResourceAsStream(properties.getProperty("bin"))
+                        :
+                        new FileInputStream(new File(properties.getProperty("zipDirectory") + properties.getProperty("bin")))
+                );
+                break;
+            case DEVELOPER:
+                editionToInstall = (InstallerUtils.isRunningFromJar()?
+                        InstallerUtils.classLoader.getResourceAsStream(properties.getProperty("project"))
+                        :
+                        new FileInputStream(new File(properties.getProperty("zipDirectory") + properties.getProperty("project")))
+                );
+                break;
+        }
+        return editionToInstall;
     }
 
     /*
@@ -516,6 +529,10 @@ public class Installer extends JFrame {
             public void windowClosing(WindowEvent e) {
                 // The window must be set to visible for this event to work
                 setVisible(true);
+                // Cancel the current installation if the software is being installed
+                if (installationWorker != null){
+                    installationWorker.cancel(true);
+                }
                 // Perform rollback if the installation has not complete successfully
                 if (!isInstallationCompleted.get()) { rollback(); }
             }
@@ -618,7 +635,7 @@ public class Installer extends JFrame {
                 // Perform rollback if the installation has not complete successfully
                 if (!isInstallationCompleted.get()) {  rollback(); }
                 // Exit the program
-                //System.exit(0);
+                System.exit(0);
             }
         });
         // Add the panel to the GUI

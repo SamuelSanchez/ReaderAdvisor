@@ -56,30 +56,32 @@ public class InstallationWorker extends SwingWorker<Integer,String> {
         InstallationWorker.failIfInterrupted();
         publish("Installing...");
         for(; installedFilesCount < totalNumberOfFilesToInstall; installedFilesCount++){
-            try{
-                // Install the files
-                String fileName = uncompressZipFile.unzipNextEntry();
-                if(fileName != null){
-                    filesInstalled.add(fileName);
-                    publish(fileName);
-                }
-                // Check if the user has cancel the install
-                InstallationWorker.failIfInterrupted();
-                // Update the progress
-                setProgress((installedFilesCount+1) * 100 / totalNumberOfFilesToInstall);
-            }catch(Exception e){
-                e.printStackTrace();
+            // Install the files
+            String fileName = uncompressZipFile.unzipNextEntry();
+            if(fileName != null){
+                filesInstalled.add(fileName);
+                publish(fileName);
             }
+            // Check if the user has cancel the install
+            InstallationWorker.failIfInterrupted();
+            // Update the progress
+            setProgress((installedFilesCount+1) * 100 / totalNumberOfFilesToInstall);
         }
         // Return the number of files installed
         return installedFilesCount;
     }
 
     protected void process(final List<String> list){
-        // Update the text are with messages
-        for(final String message : list){
-            installationMessageArea.append(message);
-            installationMessageArea.append(InstallerUtils.NEW_LINE);
-        }
+        // Run Swing components in the Swing Event Dispatcher Thread
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                // Update the text are with messages
+                for(final String message : list){
+                    installationMessageArea.append(message);
+                    installationMessageArea.append(InstallerUtils.NEW_LINE);
+                }
+            }
+        });
     }
 }
